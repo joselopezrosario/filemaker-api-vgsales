@@ -12,6 +12,9 @@ import org.robolectric.RobolectricTestRunner;
 
 import java.util.concurrent.ThreadLocalRandom;
 
+import okhttp3.MediaType;
+import okhttp3.RequestBody;
+
 @RunWith(RobolectricTestRunner.class)
 public class FileMakerAPIUnitTest extends Robolectric {
     private static String token = null;
@@ -24,7 +27,7 @@ public class FileMakerAPIUnitTest extends Robolectric {
     @BeforeClass
     public static void setup() {
         token = DataAPI.login("Jose", "ErS9WeQKa3BVJk5t");
-        allRecords = DataAPI.showAllRecords(token, "vgsales", "_limit=10000");
+        allRecords = DataAPI.getRecords(token, "vgsales", "_limit=10000");
     }
 
     /**
@@ -57,6 +60,7 @@ public class FileMakerAPIUnitTest extends Robolectric {
             int max = allRecords.length();
             int randomNum = ThreadLocalRandom.current().nextInt(0, max );
             record = allRecords.getJSONObject(randomNum).getJSONObject("fieldData");
+            int id = record.getInt(DataAPI.FIELD_ID);
             int rank = record.getInt(DataAPI.FIELD_RANK);
             String name = record.getString(DataAPI.FIELD_NAME);
             String platform = record.getString(DataAPI.FIELD_PLATFORM);
@@ -69,6 +73,9 @@ public class FileMakerAPIUnitTest extends Robolectric {
             Double other_sales = record.getDouble(DataAPI.FIELD_OTHER_SALES);
             Double global_sales = record.getDouble(DataAPI.FIELD_GLOBAL_SALES);
             int score = 0;
+            if (id > 0) {
+                score++;
+            }
             if (rank > 0) {
                 score++;
             }
@@ -102,12 +109,34 @@ public class FileMakerAPIUnitTest extends Robolectric {
             if (global_sales >= 0) {
                 score++;
             }
-            System.out.print("Rank: " + rank+"\n");
+            System.out.print("ID: " + id+"\n");
             System.out.print("Name: " + name+"\n");
-            assert score == 11;
+            assert score == 12;
         } catch (JSONException e) {
             assert false;
         }
+    }
+
+    @Test
+    public void createAndDeleteRecord(){
+        String fieldData =
+                "{\"fieldData\": {" +
+                        "\""+ DataAPI.FIELD_RANK + "\":0" + "," +
+                        "\""+ DataAPI.FIELD_NAME + "\":\"Jose's Game\"" + "," +
+                        "\""+ DataAPI.FIELD_PLATFORM + "\":\"Best Platform\"" + "," +
+                        "\""+ DataAPI.FIELD_YEAR + "\":\"2018\"" + "," +
+                        "\""+ DataAPI.FIELD_GENRE + "\":\"Arcade\"" + "," +
+                        "\""+ DataAPI.FIELD_PUBLISHER + "\":\"Android\"" + "," +
+                        "\""+ DataAPI.FIELD_NA_SALES + "\":0" + "," +
+                        "\""+ DataAPI.FIELD_EU_SALES + "\":0" + "," +
+                        "\""+ DataAPI.FIELD_JP_SALES + "\":0" + "," +
+                        "\""+ DataAPI.FIELD_OTHER_SALES + "\":0" + "," +
+                        "\""+ DataAPI.FIELD_GLOBAL_SALES + "\":0" +
+                        "}}";
+        int newRecordId = DataAPI.createRecord(token, "vgsales",
+                RequestBody.create(MediaType.parse(""),fieldData),
+                "");
+        assert newRecordId > 0;
     }
 
     /**
