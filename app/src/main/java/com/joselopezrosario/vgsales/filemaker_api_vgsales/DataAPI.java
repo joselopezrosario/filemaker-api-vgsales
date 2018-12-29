@@ -58,24 +58,25 @@ public final class DataAPI {
                 .addHeader("Content-Type", "application/json")
                 .addHeader("Authorization", ("Basic " + encodedCredentials))
                 .build();
-        try (Response response = client.newCall(request).execute()) {
-            if (response.code() == 200) {
-                token = response.header("X-FM-Data-Access-Token");
-                return token;
-            } else {
-                System.out.print("login failed: " + response.code());
-                return null;
-            }
+        Response response;
+        try {
+            response = client.newCall(request).execute();
         } catch (IOException e) {
             System.out.print("login IOException: " + e.toString());
             return null;
         }
+        if (response.code() != 200) {
+            System.out.print("login failed: " + response.code());
+            return null;
+        }
+        token = response.header("X-FM-Data-Access-Token");
+        return token;
     }
 
     /**
      * getFoundSet
      *
-     * @param token the FileMaker Data API Authorization token
+     * @param token  the FileMaker Data API Authorization token
      * @param layout the FileMaker layout
      * @param params additional parameters for offset, limit, sort, and portals
      * @return the ResponseBody of the API call or null
@@ -91,36 +92,36 @@ public final class DataAPI {
                 .addHeader("Content-Type", "application/json")
                 .addHeader("Authorization", ("Bearer " + token))
                 .build();
-        try (Response APIResponse = client.newCall(request).execute()) {
-            if (APIResponse.code() == 200) {
-                ResponseBody APIResponseBody = APIResponse.body();
-                if (APIResponseBody != null) {
-                    try {
-                        JSONObject result = new JSONObject(APIResponseBody.string());
-                        JSONObject response = result.getJSONObject("response");
-                        JSONArray data = response.getJSONArray("data");
-                        return data;
-                    } catch (JSONException e) {
-                        return null;
-                    }
-                } else {
-                    return null;
-                }
-            } else {
-                return null;
-            }
+        Response APIResponse;
+        try {
+            APIResponse = client.newCall(request).execute();
         } catch (IOException e) {
             System.out.print("showAllRecords IOException: " + e.toString());
+            return null;
+        }
+        if (APIResponse.code() != 200) {
+            return null;
+        }
+        ResponseBody APIResponseBody = APIResponse.body();
+        if (APIResponseBody == null) {
+            return null;
+        }
+        try {
+            JSONObject result = new JSONObject(APIResponseBody.string());
+            JSONObject response = result.getJSONObject("response");
+            return response.getJSONArray("data");
+        } catch (IOException | JSONException e) {
             return null;
         }
     }
 
     /**
      * createRecord
-     * @param token the FileMaker Data API Authorization token
-     * @param layout the FileMaker layout
+     *
+     * @param token     the FileMaker Data API Authorization token
+     * @param layout    the FileMaker layout
      * @param fieldData a stringify JSON objects containing field-value pairs
-     * @param params optional parameters
+     * @param params    optional parameters
      * @return the new record's id
      * For more information see yourhost/fmi/data/apidoc/#api-Record-createRecord
      */
@@ -136,30 +137,30 @@ public final class DataAPI {
                 .addHeader("Authorization", ("Bearer " + token))
                 .post(fieldData)
                 .build();
-        try (Response response = client.newCall(request).execute()) {
-            int code = response.code();
-            if (code == 200) {
-                ResponseBody responseBody = response.body();
-                if ( responseBody != null ){
-                    String responseString = responseBody.string();
-                    try{
-                        JSONObject responseArray = new JSONObject(responseString);
-                        JSONObject responseObject = responseArray.getJSONObject("response");
-                        int newRecordId = responseObject.getInt("recordId");
-                        return newRecordId;
-                    }catch(JSONException e){
-                        return 0;
-                    }
-                }else{
-                    return 0;
-                }
-            }
-            return 0;
+        Response response;
+        try {
+            response = client.newCall(request).execute();
         } catch (IOException e) {
             System.out.print("logout IOException: " + e.toString());
             return 0;
         }
-
+        int code = response.code();
+        if (code != 200) {
+            return 0;
+        }
+        ResponseBody responseBody = response.body();
+        if (responseBody == null) {
+            return 0;
+        }
+        String responseString;
+        try {
+            responseString = responseBody.string();
+            JSONObject responseArray = new JSONObject(responseString);
+            JSONObject responseObject = responseArray.getJSONObject("response");
+            return responseObject.getInt("recordId");
+        } catch (IOException | JSONException e) {
+            return 0;
+        }
     }
 
     /**
@@ -187,5 +188,4 @@ public final class DataAPI {
             return false;
         }
     }
-
 }
