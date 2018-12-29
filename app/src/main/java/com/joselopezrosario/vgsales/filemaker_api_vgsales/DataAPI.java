@@ -1,5 +1,9 @@
 package com.joselopezrosario.vgsales.filemaker_api_vgsales;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.io.IOException;
 
 import okhttp3.MediaType;
@@ -9,24 +13,27 @@ import okhttp3.RequestBody;
 import okhttp3.Response;
 import okhttp3.ResponseBody;
 
+@SuppressWarnings("SameParameterValue")
 public final class DataAPI {
     private static String ENDPOINT = "https://192.168.0.7/fmi/data/v1/databases/VideoGameSales";
+
     public DataAPI() {
         throw new AssertionError("No API instances for you!");
     }
 
     /**
      * login
+     *
      * @param accountName the FileMaker Account with fmrest privileges
-     * @param password the FileMaker account's password
+     * @param password    the FileMaker account's password
      * @return the response token
      * See the FileMaker Data API documentation at yourhost/fmi/data/apidoc/#api-Authentication-Login
      */
-    static String login(String accountName, String password){
+    static String login(String accountName, String password) {
         final MediaType postDataMediaType = MediaType.parse("");
         String encodedCredentials = Utilities.
-                encodeFileMakerCredentials(accountName,password);
-        if ( encodedCredentials == null){
+                encodeFileMakerCredentials(accountName, password);
+        if (encodedCredentials == null) {
             return null;
         }
         String token;
@@ -54,13 +61,14 @@ public final class DataAPI {
 
     /**
      * showAllRecords
-     * @param token the FileMaker Data API Authorization token
+     *
+     * @param token  the FileMaker Data API Authorization token
      * @param layout the FileMaker layout
      * @param params additional parameters for offset, limit, sort, and portals
      * @return the ResponseBody of the API call or null
      */
-    static ResponseBody showAllRecords(String token, String layout, String params){
-        if ( token == null || layout == null ){
+    static JSONArray showAllRecords(String token, String layout, String params) {
+        if (token == null || layout == null) {
             return null;
         }
         String url = ENDPOINT + "/layouts/" + layout + "/records?" + params;
@@ -70,13 +78,19 @@ public final class DataAPI {
                 .addHeader("Content-Type", "application/json")
                 .addHeader("Authorization", ("Bearer " + token))
                 .build();
-        ResponseBody responseBody;
-        try (Response response = client.newCall(request).execute()) {
-            if (response.code() == 200) {
-                responseBody = response.body();
-                if ( responseBody != null ){
-                    return responseBody;
-                }else{
+        try (Response APIResponse = client.newCall(request).execute()) {
+            if (APIResponse.code() == 200) {
+                ResponseBody APIResponseBody = APIResponse.body();
+                if (APIResponseBody != null) {
+                    try {
+                        JSONObject result = new JSONObject(APIResponseBody.string());
+                        JSONObject response = result.getJSONObject("response");
+                        JSONArray data = response.getJSONArray("data");
+                        return data;
+                    } catch (JSONException e) {
+                        return null;
+                    }
+                } else {
                     return null;
                 }
             } else {
@@ -90,11 +104,12 @@ public final class DataAPI {
 
     /**
      * logout
+     *
      * @param token the FileMaker Data API Authorization token
      * @return true if the API response code = 200, false for all other errors
      */
-    static boolean logOut(String token){
-        if ( token == null){
+    static boolean logOut(String token) {
+        if (token == null) {
             return false;
         }
         String url = ENDPOINT + "/sessions/" + token;
@@ -106,7 +121,7 @@ public final class DataAPI {
                 .delete()
                 .build();
         try (Response response = client.newCall(request).execute()) {
-             return response.code() == 200;
+            return response.code() == 200;
         } catch (IOException e) {
             System.out.print("logout IOException: " + e.toString());
             return false;
