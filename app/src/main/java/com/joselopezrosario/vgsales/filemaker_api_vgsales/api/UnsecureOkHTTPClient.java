@@ -1,4 +1,4 @@
-package com.joselopezrosario.vgsales.filemaker_api_vgsales;
+package com.joselopezrosario.vgsales.filemaker_api_vgsales.api;
 
 import android.annotation.SuppressLint;
 

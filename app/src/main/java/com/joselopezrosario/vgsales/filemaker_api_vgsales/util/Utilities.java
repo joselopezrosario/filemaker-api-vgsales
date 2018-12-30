@@ -1,4 +1,4 @@
-package com.joselopezrosario.vgsales.filemaker_api_vgsales;
+package com.joselopezrosario.vgsales.filemaker_api_vgsales.util;
 
 import android.content.Context;
 import android.util.Base64;
@@ -6,7 +6,7 @@ import android.widget.Toast;
 
 import java.io.UnsupportedEncodingException;
 
-final class Utilities {
+public final class Utilities {
 
     public Utilities() { throw new AssertionError("No Utilities instances for you!"); }
 
@@ -16,7 +16,7 @@ final class Utilities {
      * @param password the FileMaker account's password
      * @return the Base54 encoded credentials
      */
-    static String encodeFileMakerCredentials(String accountName, String password){
+    public static String encodeFileMakerCredentials(String accountName, String password){
         if ( accountName == null || password == null){
             return null;
         }

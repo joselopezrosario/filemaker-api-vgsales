@@ -1,4 +1,4 @@
-package com.joselopezrosario.vgsales.filemaker_api_vgsales;
+package com.joselopezrosario.vgsales.filemaker_api_vgsales.adapter;
 
 import android.content.Context;
 import android.support.v7.widget.RecyclerView;
@@ -6,6 +6,9 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
+
+import com.joselopezrosario.vgsales.filemaker_api_vgsales.R;
+import com.joselopezrosario.vgsales.filemaker_api_vgsales.api.FMApi;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -15,7 +18,7 @@ public class VideoGamesListAdapter extends RecyclerView.Adapter<VideoGamesListAd
     private Context mContext;
     private JSONArray mDataset;
 
-    VideoGamesListAdapter(Context context, JSONArray myDataset) {
+    public VideoGamesListAdapter(Context context, JSONArray myDataset) {
         mContext = context;
         mDataset = myDataset;
     }
@@ -52,13 +55,13 @@ public class VideoGamesListAdapter extends RecyclerView.Adapter<VideoGamesListAd
     public void onBindViewHolder(ViewHolder holder, int position) {
         try{
             JSONObject record = mDataset.getJSONObject(position).getJSONObject("fieldData");
-            holder.TextViewRank.setText(record.getString(DataAPI.FIELD_RANK));
-            holder.TextViewName.setText(record.getString(DataAPI.FIELD_NAME));
-            holder.TextViewPlatform.setText(record.getString(DataAPI.FIELD_PLATFORM));
-            holder.TextViewYear.setText(record.getString(DataAPI.FIELD_YEAR));
-            holder.TextViewGenre.setText(record.getString(DataAPI.FIELD_GENRE));
-            holder.TextViewPublisher.setText(record.getString(DataAPI.FIELD_PUBLISHER));
-            //holder.TextViewGlobalSales.setText(record.getString(DataAPI.FIELD_GLOBAL_SALES));
+            holder.TextViewRank.setText(record.getString(FMApi.FIELD_RANK));
+            holder.TextViewName.setText(record.getString(FMApi.FIELD_NAME));
+            holder.TextViewPlatform.setText(record.getString(FMApi.FIELD_PLATFORM));
+            holder.TextViewYear.setText(record.getString(FMApi.FIELD_YEAR));
+            holder.TextViewGenre.setText(record.getString(FMApi.FIELD_GENRE));
+            holder.TextViewPublisher.setText(record.getString(FMApi.FIELD_PUBLISHER));
+            //holder.TextViewGlobalSales.setText(record.getString(FMApi.FIELD_GLOBAL_SALES));
         }catch(JSONException e){
             System.out.println("Parsing error: " + e);
         }

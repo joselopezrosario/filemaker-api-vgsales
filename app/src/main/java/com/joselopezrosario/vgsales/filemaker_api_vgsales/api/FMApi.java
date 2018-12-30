@@ -1,6 +1,8 @@
-package com.joselopezrosario.vgsales.filemaker_api_vgsales;
+package com.joselopezrosario.vgsales.filemaker_api_vgsales.api;
 
-import org.json.JSONArray;
+
+import com.joselopezrosario.vgsales.filemaker_api_vgsales.util.Utilities;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -14,24 +16,24 @@ import okhttp3.Response;
 import okhttp3.ResponseBody;
 
 @SuppressWarnings("SameParameterValue")
-final class DataAPI {
+public final class FMApi {
     private static String ENDPOINT = "https://192.168.0.7/fmi/data/v1/databases/VideoGameSales";
 
-    final static String ACCOUNTNAME = "Jose";
-    final static String PASSWORD = "ErS9WeQKa3BVJk5t";
-    final static String LAYOUT_VGSALES = "vgsales";
-    final static String FIELD_ID = "ID";
-    final static String FIELD_RANK = "Rank";
-    final static String FIELD_NAME = "Name";
-    final static String FIELD_PLATFORM = "Platform";
-    final static String FIELD_YEAR = "Year";
-    final static String FIELD_GENRE = "Genre";
-    final static String FIELD_PUBLISHER = "Publisher";
-    final static String FIELD_NA_SALES = "NA_Sales";
-    final static String FIELD_EU_SALES = "EU_Sales";
-    final static String FIELD_JP_SALES = "JP_Sales";
-    final static String FIELD_OTHER_SALES = "Other_Sales";
-    final static String FIELD_GLOBAL_SALES = "Global_Sales";
+    public final static String ACCOUNTNAME = "Jose";
+    public final static String PASSWORD = "ErS9WeQKa3BVJk5t";
+    public final static String LAYOUT_VGSALES = "vgsales";
+    public final static String FIELD_ID = "ID";
+    public final static String FIELD_RANK = "Rank";
+    public final static String FIELD_NAME = "Name";
+    public final static String FIELD_PLATFORM = "Platform";
+    public final static String FIELD_YEAR = "Year";
+    public final static String FIELD_GENRE = "Genre";
+    public final static String FIELD_PUBLISHER = "Publisher";
+    public final static String FIELD_NA_SALES = "NA_Sales";
+    public final static String FIELD_EU_SALES = "EU_Sales";
+    public final static String FIELD_JP_SALES = "JP_Sales";
+    public final static String FIELD_OTHER_SALES = "Other_Sales";
+    public final static String FIELD_GLOBAL_SALES = "Global_Sales";
 
     private static String RESPONSE = "response";
     private static String DATA = "data";
@@ -43,60 +45,68 @@ final class DataAPI {
     private static String BASIC = "Basic ";
     private static String BEARER = "Bearer ";
 
-    public DataAPI() {
+    public FMApi() {
         throw new AssertionError("No API instances for you!");
     }
 
     /**
      * login
+     * POST METHOD
      *
      * @param accountName the FileMaker Account with fmrest privileges
      * @param password    the FileMaker account's password
      * @return the response token
      * See the FileMaker Data API documentation at yourhost/fmi/data/apidoc/#api-Authentication-Login
      */
-    static String login(String accountName, String password) {
+    public static FMApiResponse login(String accountName, String password) {
+        FMApiResponse fmar = new FMApiResponse();
+        if (accountName == null || password == null) {
+            return fmar;
+        }
         final MediaType postDataMediaType = MediaType.parse("");
         String encodedCredentials = Utilities.
                 encodeFileMakerCredentials(accountName, password);
         if (encodedCredentials == null) {
-            return null;
+            return fmar;
         }
-        String token;
-        // Create an OkHTTPClient and call the FileMaker Data API
         OkHttpClient client = UnsecureOkHTTPClient.trustAllSslClient(new OkHttpClient());
         Request request = new Request.Builder()
                 .url(ENDPOINT + SESSIONS)
                 .post(RequestBody.create(postDataMediaType, "{}"))
                 .addHeader(CONTENT_TYPE, APPLICATION_JSON)
-                .addHeader(AUTHORIZATION,BASIC + encodedCredentials)
+                .addHeader(AUTHORIZATION, BASIC + encodedCredentials)
                 .build();
         Response response;
         try {
             response = client.newCall(request).execute();
         } catch (IOException e) {
             System.out.print("login IOException: " + e.toString());
-            return null;
+            return fmar;
         }
-        if (response.code() != 200) {
+        int code = response.code();
+        if (code != 200) {
             System.out.print("login failed: " + response.code());
-            return null;
+            fmar.setResponseCode(code);
+            fmar.setSuccess(true);
+            return fmar;
         }
-        token = response.header("X-FM-Data-Access-Token");
-        return token;
+        fmar.setToken(response.header("X-FM-Data-Access-Token"));
+        return fmar;
     }
 
     /**
-     * getFoundSet
+     * getRecords
+     * GET METHOD
      *
      * @param token  the FileMaker Data API Authorization token
      * @param layout the FileMaker layout
      * @param params additional parameters for offset, limit, sort, and portals
      * @return the ResponseBody of the API call or null
      */
-    static JSONArray getRecords(String token, String layout, String params) {
+    public static FMApiResponse getRecords(String token, String layout, String params) {
+        FMApiResponse fmar = new FMApiResponse();
         if (token == null || layout == null) {
-            return null;
+            return fmar;
         }
         String url = ENDPOINT + "/layouts/" + layout + "/records?" + params;
         OkHttpClient client = UnsecureOkHTTPClient.trustAllSslClient(new OkHttpClient());
@@ -110,39 +120,44 @@ final class DataAPI {
             APIResponse = client.newCall(request).execute();
         } catch (IOException e) {
             System.out.print("getRecords IOException: " + e.toString());
-            return null;
+            return fmar;
         }
-        if (APIResponse.code() != 200) {
-            return null;
+        int code = APIResponse.code();
+        if (code != 200) {
+            fmar.setResponseCode(code);
+            return fmar;
         }
         ResponseBody APIResponseBody = APIResponse.body();
         if (APIResponseBody == null) {
-            return null;
+            return fmar;
         }
         try {
             JSONObject result = new JSONObject(APIResponseBody.string());
             JSONObject response = result.getJSONObject(RESPONSE);
-            return response.getJSONArray(DATA);
+            fmar.setData(response.getJSONArray(DATA));
+            fmar.setSuccess(true);
+            return fmar;
         } catch (IOException | JSONException e) {
-            return null;
+            return fmar;
         }
     }
 
     /**
      * createRecord
+     * POST METHOD
      *
      * @param token     the FileMaker Data API Authorization token
      * @param layout    the FileMaker layout
      * @param fieldData a stringify JSON objects containing field-value pairs
-     * @param params    optional parameters
      * @return the new record's id
      * For more information see yourhost/fmi/data/apidoc/#api-Record-createRecord
      */
-    static int createRecord(String token, String layout, RequestBody fieldData, String params) {
+    public static FMApiResponse createRecord(String token, String layout, RequestBody fieldData) {
+        FMApiResponse fmar = new FMApiResponse();
         if (token == null || layout == null || fieldData == null) {
-            return 0;
+            return fmar;
         }
-        String url = ENDPOINT + "/layouts/" + layout + "/records?" + params;
+        String url = ENDPOINT + "/layouts/" + layout + "/records?";
         OkHttpClient client = UnsecureOkHTTPClient.trustAllSslClient(new OkHttpClient());
         Request request = new Request.Builder()
                 .url(url)
@@ -155,39 +170,43 @@ final class DataAPI {
             response = client.newCall(request).execute();
         } catch (IOException e) {
             System.out.print("logout IOException: " + e.toString());
-            return 0;
+            return fmar;
         }
         int code = response.code();
         if (code != 200) {
-            return 0;
+            fmar.setResponseCode(code);
+            return fmar;
         }
         ResponseBody responseBody = response.body();
         if (responseBody == null) {
-            return 0;
+            return fmar;
         }
         String responseString;
         try {
             responseString = responseBody.string();
-            JSONObject responseArray = new JSONObject(responseString);
-            JSONObject responseObject = responseArray.getJSONObject("response");
-            return responseObject.getInt("recordId");
+            JSONObject responseObject = new JSONObject(responseString).getJSONObject("response");
+            fmar.setSuccess(true);
+            fmar.setRecordId(responseObject.getString("recordId"));
+            return fmar;
         } catch (IOException | JSONException e) {
-            return 0;
+            return fmar;
         }
     }
 
     /**
      * editRecord
+     * PATCH METHOD
+     *
      * @param token     the FileMaker Data API Authorization token
      * @param layout    the FileMaker layout
      * @param recordId  the record's id to edit
      * @param fieldData a stringify JSON objects containing field-value pairs
-     * @param params    optional parameters
      * @return true if edit was successul, false if not
      */
-    static boolean editRecord(String token, String layout, String recordId, RequestBody fieldData, String params){
+    public static FMApiResponse editRecord(String token, String layout, String recordId, RequestBody fieldData) {
+        FMApiResponse fmar = new FMApiResponse();
         if (token == null || layout == null || recordId.isEmpty()) {
-            return false;
+            return fmar;
         }
         String url = ENDPOINT + "/layouts/" + layout + "/records/" + recordId;
         OkHttpClient client = UnsecureOkHTTPClient.trustAllSslClient(new OkHttpClient());
@@ -202,24 +221,27 @@ final class DataAPI {
             APIResponse = client.newCall(request).execute();
         } catch (IOException e) {
             System.out.print("editRecord IOException: " + e.toString());
-            return false;
+            return fmar;
         }
-        return APIResponse.code() == 200;
+        fmar.setSuccess(true);
+        fmar.setResponseCode(APIResponse.code());
+        return fmar;
     }
 
     /**
      * deleteRecord
+     * DELETE METHOD
      *
      * @param token    the FileMaker Data API Authorization token
      * @param layout   the FileMaker layout
      * @param recordId the id of the record to delete
-     * @param params   optional parameters
      * @return true if the record is deleted, false if there's an error
      * For more information see yourhost/fmi/data/apidoc/#api-Record-editRecord
      */
-    static boolean deleteRecord(String token, String layout, String recordId, String params) {
+    public static FMApiResponse deleteRecord(String token, String layout, String recordId) {
+        FMApiResponse fmar = new FMApiResponse();
         if (token == null || layout == null || recordId.isEmpty()) {
-            return false;
+            return fmar;
         }
         String url = ENDPOINT + "/layouts/" + layout + "/records/" + recordId;
         OkHttpClient client = UnsecureOkHTTPClient.trustAllSslClient(new OkHttpClient());
@@ -234,20 +256,24 @@ final class DataAPI {
             APIResponse = client.newCall(request).execute();
         } catch (IOException e) {
             System.out.print("deleteRecord IOException: " + e.toString());
-            return false;
+            return fmar;
         }
-        return APIResponse.code() == 200;
+        fmar.setSuccess(true);
+        fmar.setResponseCode(APIResponse.code());
+        return fmar;
     }
 
     /**
      * logout
+     * DELETE METHOD
      *
      * @param token the FileMaker Data API Authorization token
      * @return true if the API response code = 200, false for all other errors
      */
-    static boolean logOut(String token) {
+    public static FMApiResponse logOut(String token) {
+        FMApiResponse fmar = new FMApiResponse();
         if (token == null) {
-            return false;
+            return fmar;
         }
         String url = ENDPOINT + "/sessions/" + token;
         OkHttpClient client = UnsecureOkHTTPClient.trustAllSslClient(new OkHttpClient());
@@ -258,10 +284,13 @@ final class DataAPI {
                 .delete()
                 .build();
         try (Response response = client.newCall(request).execute()) {
-            return response.code() == 200;
+            fmar.setResponseCode(response.code());
+            fmar.setSuccess(true);
+            return fmar;
         } catch (IOException e) {
             System.out.print("logout IOException: " + e.toString());
-            return false;
+            return fmar;
         }
     }
+
 }

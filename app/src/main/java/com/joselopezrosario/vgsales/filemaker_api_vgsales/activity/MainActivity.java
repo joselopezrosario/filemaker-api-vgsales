@@ -1,4 +1,4 @@
-package com.joselopezrosario.vgsales.filemaker_api_vgsales;
+package com.joselopezrosario.vgsales.filemaker_api_vgsales.activity;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -13,6 +13,11 @@ import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.Toast;
+
+import com.joselopezrosario.vgsales.filemaker_api_vgsales.service.IntentServiceAPI;
+import com.joselopezrosario.vgsales.filemaker_api_vgsales.R;
+import com.joselopezrosario.vgsales.filemaker_api_vgsales.util.Utilities;
+import com.joselopezrosario.vgsales.filemaker_api_vgsales.adapter.VideoGamesListAdapter;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -58,17 +63,17 @@ public class MainActivity extends AppCompatActivity {
     private class DownloadStateReceiver extends BroadcastReceiver {
         @Override
         public void onReceive(Context context, Intent intent) {
-            if ( intent.getExtras() == null ){
+            if (intent.getExtras() == null) {
                 Utilities.showToast(context, "LOL", Toast.LENGTH_SHORT);
                 return;
             }
             boolean statusLogin = intent.getExtras().getBoolean("statusLogin");
-            if ( !statusLogin ){
+            if (!statusLogin) {
                 Utilities.showToast(context, "Login error", Toast.LENGTH_SHORT);
                 return;
             }
             String data = intent.getExtras().getString("data");
-            if ( data == null ){
+            if (data == null) {
                 Utilities.showToast(context, "No records found", Toast.LENGTH_SHORT);
                 return;
             }

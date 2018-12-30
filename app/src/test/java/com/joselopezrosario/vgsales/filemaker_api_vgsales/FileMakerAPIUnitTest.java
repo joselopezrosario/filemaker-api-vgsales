@@ -1,5 +1,8 @@
 package com.joselopezrosario.vgsales.filemaker_api_vgsales;
 
+import com.joselopezrosario.vgsales.filemaker_api_vgsales.api.FMApi;
+import com.joselopezrosario.vgsales.filemaker_api_vgsales.api.FMApiResponse;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -22,17 +25,17 @@ public class FileMakerAPIUnitTest extends Robolectric {
     private static final String emptyFieldData = "{\"fieldData\": {}}";
     private static final String fieldData =
             "{\"fieldData\": {" +
-                    "\"" + DataAPI.FIELD_RANK + "\":0" + "," +
-                    "\"" + DataAPI.FIELD_NAME + "\":\"Jose's Game\"" + "," +
-                    "\"" + DataAPI.FIELD_PLATFORM + "\":\"Best Platform\"" + "," +
-                    "\"" + DataAPI.FIELD_YEAR + "\":\"2018\"" + "," +
-                    "\"" + DataAPI.FIELD_GENRE + "\":\"Arcade\"" + "," +
-                    "\"" + DataAPI.FIELD_PUBLISHER + "\":\"Best Publisher\"" + "," +
-                    "\"" + DataAPI.FIELD_NA_SALES + "\":10.0" + "," +
-                    "\"" + DataAPI.FIELD_EU_SALES + "\":11.0" + "," +
-                    "\"" + DataAPI.FIELD_JP_SALES + "\":12.0" + "," +
-                    "\"" + DataAPI.FIELD_OTHER_SALES + "\":13.0" + "," +
-                    "\"" + DataAPI.FIELD_GLOBAL_SALES + "\":46.0" +
+                    "\"" + FMApi.FIELD_RANK + "\":0" + "," +
+                    "\"" + FMApi.FIELD_NAME + "\":\"Jose's Game\"" + "," +
+                    "\"" + FMApi.FIELD_PLATFORM + "\":\"Best Platform\"" + "," +
+                    "\"" + FMApi.FIELD_YEAR + "\":\"2018\"" + "," +
+                    "\"" + FMApi.FIELD_GENRE + "\":\"Arcade\"" + "," +
+                    "\"" + FMApi.FIELD_PUBLISHER + "\":\"Best Publisher\"" + "," +
+                    "\"" + FMApi.FIELD_NA_SALES + "\":10.0" + "," +
+                    "\"" + FMApi.FIELD_EU_SALES + "\":11.0" + "," +
+                    "\"" + FMApi.FIELD_JP_SALES + "\":12.0" + "," +
+                    "\"" + FMApi.FIELD_OTHER_SALES + "\":13.0" + "," +
+                    "\"" + FMApi.FIELD_GLOBAL_SALES + "\":46.0" +
                     "}}";
     /**
      * setUp
@@ -40,8 +43,13 @@ public class FileMakerAPIUnitTest extends Robolectric {
      */
     @BeforeClass
     public static void setup() {
-        token = DataAPI.login(DataAPI.ACCOUNTNAME, DataAPI.PASSWORD);
-        getRecords = DataAPI.getRecords(token, DataAPI.LAYOUT_VGSALES, "_limit=10000");
+        FMApiResponse fmar = FMApi.login(FMApi.ACCOUNTNAME, FMApi.PASSWORD);
+        token = fmar.getToken();
+        fmar = FMApi.getRecords(
+                token,
+                FMApi.LAYOUT_VGSALES,
+                "_limit=10000");
+        getRecords = fmar.getData();
     }
 
     /**
@@ -74,18 +82,18 @@ public class FileMakerAPIUnitTest extends Robolectric {
             int max = getRecords.length();
             int randomNum = ThreadLocalRandom.current().nextInt(0, max);
             record = getRecords.getJSONObject(randomNum).getJSONObject("fieldData");
-            int id = record.getInt(DataAPI.FIELD_ID);
-            int rank = record.getInt(DataAPI.FIELD_RANK);
-            String name = record.getString(DataAPI.FIELD_NAME);
-            String platform = record.getString(DataAPI.FIELD_PLATFORM);
-            String year = record.getString(DataAPI.FIELD_YEAR);
-            String genre = record.getString(DataAPI.FIELD_GENRE);
-            String publisher = record.getString(DataAPI.FIELD_PUBLISHER);
-            Double na_sales = record.getDouble(DataAPI.FIELD_NA_SALES);
-            Double eu_sales = record.getDouble(DataAPI.FIELD_EU_SALES);
-            Double jp_sales = record.getDouble(DataAPI.FIELD_JP_SALES);
-            Double other_sales = record.getDouble(DataAPI.FIELD_OTHER_SALES);
-            Double global_sales = record.getDouble(DataAPI.FIELD_GLOBAL_SALES);
+            int id = record.getInt(FMApi.FIELD_ID);
+            int rank = record.getInt(FMApi.FIELD_RANK);
+            String name = record.getString(FMApi.FIELD_NAME);
+            String platform = record.getString(FMApi.FIELD_PLATFORM);
+            String year = record.getString(FMApi.FIELD_YEAR);
+            String genre = record.getString(FMApi.FIELD_GENRE);
+            String publisher = record.getString(FMApi.FIELD_PUBLISHER);
+            Double na_sales = record.getDouble(FMApi.FIELD_NA_SALES);
+            Double eu_sales = record.getDouble(FMApi.FIELD_EU_SALES);
+            Double jp_sales = record.getDouble(FMApi.FIELD_JP_SALES);
+            Double other_sales = record.getDouble(FMApi.FIELD_OTHER_SALES);
+            Double global_sales = record.getDouble(FMApi.FIELD_GLOBAL_SALES);
             int score = 0;
             if (id > 0) {
                 score++;
@@ -138,16 +146,19 @@ public class FileMakerAPIUnitTest extends Robolectric {
      */
     @Test
     public void createAndDeleteRecord() {
-        int newRecordId = DataAPI.createRecord(token, DataAPI.LAYOUT_VGSALES,
-                RequestBody.create(MediaType.parse(""), fieldData),
-                "");
+        FMApiResponse fmar = FMApi.createRecord(
+                token,
+                FMApi.LAYOUT_VGSALES,
+                RequestBody.create(MediaType.parse(""), fieldData)
+        );
+        int newRecordId = Integer.parseInt(fmar.getRecordId());
         boolean delete = false;
         if (newRecordId > 0) {
-            delete =
-                    DataAPI.deleteRecord(token,
-                            DataAPI.LAYOUT_VGSALES,
-                            String.valueOf(newRecordId),
-                            "");
+            fmar = FMApi.deleteRecord(
+                    token,
+                    FMApi.LAYOUT_VGSALES,
+                    String.valueOf(newRecordId));
+            delete = fmar.isSuccess();
         }
         assert newRecordId > 0 && delete;
     }
@@ -160,16 +171,25 @@ public class FileMakerAPIUnitTest extends Robolectric {
     @Test
     public void createEditAndDeleteRecord() {
         RequestBody createRequestBody = RequestBody.create(MediaType.parse(""), emptyFieldData);
-        int newRecordId = DataAPI.createRecord(token, DataAPI.LAYOUT_VGSALES, createRequestBody, "");
-        boolean edit = false;
+        FMApiResponse fmar = FMApi.createRecord(token, FMApi.LAYOUT_VGSALES, createRequestBody);
+        int newRecordId = Integer.parseInt(fmar.getRecordId());
         RequestBody editRequestBody = RequestBody.create(MediaType.parse(""), fieldData);
+        boolean edit = false;
         if (newRecordId > 0) {
-            edit = DataAPI.editRecord(token, DataAPI.LAYOUT_VGSALES,
-                    String.valueOf(newRecordId), editRequestBody, "");
+            fmar = FMApi.editRecord(
+                    token,
+                    FMApi.LAYOUT_VGSALES,
+                    String.valueOf(newRecordId),
+                    editRequestBody);
+            edit = fmar.isSuccess();
         }
         boolean delete = false;
         if (newRecordId > 0) {
-            delete = DataAPI.deleteRecord(token, DataAPI.LAYOUT_VGSALES, String.valueOf(newRecordId), "");
+            fmar = FMApi.deleteRecord(
+                    token,
+                    FMApi.LAYOUT_VGSALES,
+                    String.valueOf(newRecordId));
+            delete = fmar.isSuccess();
         }
         assert newRecordId > 0 && edit && delete;
     }
@@ -180,7 +200,7 @@ public class FileMakerAPIUnitTest extends Robolectric {
      */
     @AfterClass
     public static void logOut() {
-        boolean logout = DataAPI.logOut(token);
+        boolean logout = FMApi.logOut(token).isSuccess();
         assert logout;
     }
 }
