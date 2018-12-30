@@ -15,6 +15,8 @@ import okhttp3.ResponseBody;
 
 @SuppressWarnings("SameParameterValue")
 final class DataAPI {
+    private static String ENDPOINT = "https://192.168.0.7/fmi/data/v1/databases/VideoGameSales";
+
     final static String ACCOUNTNAME = "Jose";
     final static String PASSWORD = "ErS9WeQKa3BVJk5t";
     final static String LAYOUT_VGSALES = "vgsales";
@@ -31,7 +33,15 @@ final class DataAPI {
     final static String FIELD_OTHER_SALES = "Other_Sales";
     final static String FIELD_GLOBAL_SALES = "Global_Sales";
 
-    private static String ENDPOINT = "https://192.168.0.7/fmi/data/v1/databases/VideoGameSales";
+    private static String RESPONSE = "response";
+    private static String DATA = "data";
+
+    private static String SESSIONS = "/sessions";
+    private static String CONTENT_TYPE = "Content-Type";
+    private static String APPLICATION_JSON = "application/json";
+    private static String AUTHORIZATION = "Authorization";
+    private static String BASIC = "Basic ";
+    private static String BEARER = "Bearer ";
 
     public DataAPI() {
         throw new AssertionError("No API instances for you!");
@@ -56,10 +66,10 @@ final class DataAPI {
         // Create an OkHTTPClient and call the FileMaker Data API
         OkHttpClient client = UnsecureOkHTTPClient.trustAllSslClient(new OkHttpClient());
         Request request = new Request.Builder()
-                .url(ENDPOINT + "/sessions")
+                .url(ENDPOINT + SESSIONS)
                 .post(RequestBody.create(postDataMediaType, "{}"))
-                .addHeader("Content-Type", "application/json")
-                .addHeader("Authorization", ("Basic " + encodedCredentials))
+                .addHeader(CONTENT_TYPE, APPLICATION_JSON)
+                .addHeader(AUTHORIZATION,BASIC + encodedCredentials)
                 .build();
         Response response;
         try {
@@ -92,14 +102,14 @@ final class DataAPI {
         OkHttpClient client = UnsecureOkHTTPClient.trustAllSslClient(new OkHttpClient());
         Request request = new Request.Builder()
                 .url(url)
-                .addHeader("Content-Type", "application/json")
-                .addHeader("Authorization", ("Bearer " + token))
+                .addHeader(CONTENT_TYPE, APPLICATION_JSON)
+                .addHeader(AUTHORIZATION, BEARER + token)
                 .build();
         Response APIResponse;
         try {
             APIResponse = client.newCall(request).execute();
         } catch (IOException e) {
-            System.out.print("showAllRecords IOException: " + e.toString());
+            System.out.print("getRecords IOException: " + e.toString());
             return null;
         }
         if (APIResponse.code() != 200) {
@@ -111,8 +121,8 @@ final class DataAPI {
         }
         try {
             JSONObject result = new JSONObject(APIResponseBody.string());
-            JSONObject response = result.getJSONObject("response");
-            return response.getJSONArray("data");
+            JSONObject response = result.getJSONObject(RESPONSE);
+            return response.getJSONArray(DATA);
         } catch (IOException | JSONException e) {
             return null;
         }
@@ -167,6 +177,37 @@ final class DataAPI {
     }
 
     /**
+     * editRecord
+     * @param token     the FileMaker Data API Authorization token
+     * @param layout    the FileMaker layout
+     * @param recordId  the record's id to edit
+     * @param fieldData a stringify JSON objects containing field-value pairs
+     * @param params    optional parameters
+     * @return true if edit was successul, false if not
+     */
+    static boolean editRecord(String token, String layout, String recordId, RequestBody fieldData, String params){
+        if (token == null || layout == null || recordId.isEmpty()) {
+            return false;
+        }
+        String url = ENDPOINT + "/layouts/" + layout + "/records/" + recordId;
+        OkHttpClient client = UnsecureOkHTTPClient.trustAllSslClient(new OkHttpClient());
+        Request request = new Request.Builder()
+                .url(url)
+                .addHeader(CONTENT_TYPE, APPLICATION_JSON)
+                .addHeader(AUTHORIZATION, BEARER + token)
+                .patch(fieldData)
+                .build();
+        Response APIResponse;
+        try {
+            APIResponse = client.newCall(request).execute();
+        } catch (IOException e) {
+            System.out.print("editRecord IOException: " + e.toString());
+            return false;
+        }
+        return APIResponse.code() == 200;
+    }
+
+    /**
      * deleteRecord
      *
      * @param token    the FileMaker Data API Authorization token
@@ -174,7 +215,7 @@ final class DataAPI {
      * @param recordId the id of the record to delete
      * @param params   optional parameters
      * @return true if the record is deleted, false if there's an error
-     * For more information see yourhost/fmi/data/apidoc/#api-Record-deleteRecord
+     * For more information see yourhost/fmi/data/apidoc/#api-Record-editRecord
      */
     static boolean deleteRecord(String token, String layout, String recordId, String params) {
         if (token == null || layout == null || recordId.isEmpty()) {
@@ -184,8 +225,8 @@ final class DataAPI {
         OkHttpClient client = UnsecureOkHTTPClient.trustAllSslClient(new OkHttpClient());
         Request request = new Request.Builder()
                 .url(url)
-                .addHeader("Content-Type", "application/json")
-                .addHeader("Authorization", ("Bearer " + token))
+                .addHeader(CONTENT_TYPE, APPLICATION_JSON)
+                .addHeader(AUTHORIZATION, BEARER + token)
                 .delete()
                 .build();
         Response APIResponse;
@@ -212,8 +253,8 @@ final class DataAPI {
         OkHttpClient client = UnsecureOkHTTPClient.trustAllSslClient(new OkHttpClient());
         Request request = new Request.Builder()
                 .url(url)
-                .addHeader("Content-Type", "application/json")
-                .addHeader("Authorization", ("Bearer " + token))
+                .addHeader(CONTENT_TYPE, APPLICATION_JSON)
+                .addHeader(AUTHORIZATION, BEARER + token)
                 .delete()
                 .build();
         try (Response response = client.newCall(request).execute()) {

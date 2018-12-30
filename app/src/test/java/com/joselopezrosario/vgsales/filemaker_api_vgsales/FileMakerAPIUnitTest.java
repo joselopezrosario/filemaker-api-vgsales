@@ -19,6 +19,7 @@ import okhttp3.RequestBody;
 public class FileMakerAPIUnitTest extends Robolectric {
     private static String token = null;
     private static JSONArray getRecords = null;
+    private static final String emptyFieldData = "{\"fieldData\": {}}";
     private static final String fieldData =
             "{\"fieldData\": {" +
                     "\"" + DataAPI.FIELD_RANK + "\":0" + "," +
@@ -33,7 +34,6 @@ public class FileMakerAPIUnitTest extends Robolectric {
                     "\"" + DataAPI.FIELD_OTHER_SALES + "\":13.0" + "," +
                     "\"" + DataAPI.FIELD_GLOBAL_SALES + "\":46.0" +
                     "}}";
-
     /**
      * setUp
      * Set the FileMaker Data API token and get a foundset of 10,000 records
@@ -138,7 +138,7 @@ public class FileMakerAPIUnitTest extends Robolectric {
      */
     @Test
     public void createAndDeleteRecord() {
-        int newRecordId = DataAPI.createRecord(token,  DataAPI.LAYOUT_VGSALES,
+        int newRecordId = DataAPI.createRecord(token, DataAPI.LAYOUT_VGSALES,
                 RequestBody.create(MediaType.parse(""), fieldData),
                 "");
         boolean delete = false;
@@ -150,6 +150,28 @@ public class FileMakerAPIUnitTest extends Robolectric {
                             "");
         }
         assert newRecordId > 0 && delete;
+    }
+
+    /**
+     * createEditAndDeleteRecord
+     * Create a blank record, edit it, then delete it
+     * The test passes if all the actions are successful
+     */
+    @Test
+    public void createEditAndDeleteRecord() {
+        RequestBody createRequestBody = RequestBody.create(MediaType.parse(""), emptyFieldData);
+        int newRecordId = DataAPI.createRecord(token, DataAPI.LAYOUT_VGSALES, createRequestBody, "");
+        boolean edit = false;
+        RequestBody editRequestBody = RequestBody.create(MediaType.parse(""), fieldData);
+        if (newRecordId > 0) {
+            edit = DataAPI.editRecord(token, DataAPI.LAYOUT_VGSALES,
+                    String.valueOf(newRecordId), editRequestBody, "");
+        }
+        boolean delete = false;
+        if (newRecordId > 0) {
+            delete = DataAPI.deleteRecord(token, DataAPI.LAYOUT_VGSALES, String.valueOf(newRecordId), "");
+        }
+        assert newRecordId > 0 && edit && delete;
     }
 
     /**
