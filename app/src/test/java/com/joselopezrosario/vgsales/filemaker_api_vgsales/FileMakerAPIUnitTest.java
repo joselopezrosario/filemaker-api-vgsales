@@ -35,8 +35,8 @@ public class FileMakerAPIUnitTest extends Robolectric {
                     "}}";
 
     /**
-     * setToken
-     * Call the DataAPI's login method to set the FileMaker Data API Authorization token
+     * setUp
+     * Set the FileMaker Data API token and get a foundset of 10,000 records
      */
     @BeforeClass
     public static void setup() {
@@ -131,6 +131,11 @@ public class FileMakerAPIUnitTest extends Robolectric {
         }
     }
 
+    /**
+     * createAndDeleteRecord
+     * Create a record and then delete it
+     * The test passes if both actions are successful
+     */
     @Test
     public void createAndDeleteRecord() {
         int newRecordId = DataAPI.createRecord(token,  DataAPI.LAYOUT_VGSALES,
