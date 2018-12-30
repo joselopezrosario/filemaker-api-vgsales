@@ -2,6 +2,10 @@
 
 An Android app to learn how to interact with the FileMaker Server 17 Data API.
 
+![MainActivity](https://raw.githubusercontent.com/joselopezrosario/filemaker-api-vgsales/master/project-screenshots/vgsales_MainActivity.PNG)
+
+I created the FileMaker database from a [Kaggle dataset on video game sales](https://www.kaggle.com/gregorut/videogamesales).
+
 ## Getting Started
 
 These instructions will get you a copy of the project up and running on your local machine for development and testing purposes.
