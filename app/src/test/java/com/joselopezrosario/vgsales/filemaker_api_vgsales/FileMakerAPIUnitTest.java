@@ -37,6 +37,7 @@ public class FileMakerAPIUnitTest extends Robolectric {
                     "\"" + FMApi.FIELD_OTHER_SALES + "\":13.0" + "," +
                     "\"" + FMApi.FIELD_GLOBAL_SALES + "\":46.0" +
                     "}}";
+
     /**
      * setUp
      * Set the FileMaker Data API token and get a foundset of 10,000 records
@@ -44,12 +45,12 @@ public class FileMakerAPIUnitTest extends Robolectric {
     @BeforeClass
     public static void setup() {
         FMApiResponse fmar = FMApi.login(FMApi.ACCOUNTNAME, FMApi.PASSWORD);
-        token = fmar.getToken();
+        token = fmar.getFmToken();
         fmar = FMApi.getRecords(
                 token,
                 FMApi.LAYOUT_VGSALES,
                 "_limit=10000");
-        getRecords = fmar.getData();
+        getRecords = fmar.getFmData();
     }
 
     /**
@@ -146,21 +147,20 @@ public class FileMakerAPIUnitTest extends Robolectric {
      */
     @Test
     public void createAndDeleteRecord() {
-        FMApiResponse fmar = FMApi.createRecord(
+        FMApiResponse fmar;
+        fmar = FMApi.createRecord(
                 token,
                 FMApi.LAYOUT_VGSALES,
                 RequestBody.create(MediaType.parse(""), fieldData)
         );
-        int newRecordId = Integer.parseInt(fmar.getRecordId());
+        String newRecordId = fmar.getFmRecordId();
         boolean delete = false;
-        if (newRecordId > 0) {
-            fmar = FMApi.deleteRecord(
-                    token,
-                    FMApi.LAYOUT_VGSALES,
-                    String.valueOf(newRecordId));
+        fmar.clear();
+        if (newRecordId != null) {
+            fmar = FMApi.deleteRecord(token, FMApi.LAYOUT_VGSALES, newRecordId);
             delete = fmar.isSuccess();
         }
-        assert newRecordId > 0 && delete;
+        assert newRecordId != null && delete;
     }
 
     /**
@@ -170,28 +170,29 @@ public class FileMakerAPIUnitTest extends Robolectric {
      */
     @Test
     public void createEditAndDeleteRecord() {
+        FMApiResponse fmar;
         RequestBody createRequestBody = RequestBody.create(MediaType.parse(""), emptyFieldData);
-        FMApiResponse fmar = FMApi.createRecord(token, FMApi.LAYOUT_VGSALES, createRequestBody);
-        int newRecordId = Integer.parseInt(fmar.getRecordId());
+        fmar = FMApi.createRecord(
+                token,
+                FMApi.LAYOUT_VGSALES,
+                createRequestBody);
+        String newRecordId = fmar.getFmRecordId();
         RequestBody editRequestBody = RequestBody.create(MediaType.parse(""), fieldData);
-        boolean edit = false;
-        if (newRecordId > 0) {
-            fmar = FMApi.editRecord(
+        fmar.clear();
+        fmar = FMApi.editRecord(
+                token,
+                FMApi.LAYOUT_VGSALES,
+                newRecordId,
+                editRequestBody);
+        boolean edit = fmar.isSuccess();
+        boolean delete;
+        fmar.clear();
+        fmar = FMApi.deleteRecord(
                     token,
                     FMApi.LAYOUT_VGSALES,
-                    String.valueOf(newRecordId),
-                    editRequestBody);
-            edit = fmar.isSuccess();
-        }
-        boolean delete = false;
-        if (newRecordId > 0) {
-            fmar = FMApi.deleteRecord(
-                    token,
-                    FMApi.LAYOUT_VGSALES,
-                    String.valueOf(newRecordId));
-            delete = fmar.isSuccess();
-        }
-        assert newRecordId > 0 && edit && delete;
+                    newRecordId);
+        delete = fmar.isSuccess();
+        assert newRecordId != null && edit && delete;
     }
 
     /**

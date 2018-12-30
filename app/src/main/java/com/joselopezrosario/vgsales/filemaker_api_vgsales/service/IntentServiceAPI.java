@@ -16,7 +16,7 @@ public class IntentServiceAPI extends IntentService {
     }
 
     protected void onHandleIntent(Intent intent) {
-        String token = FMApi.login(FMApi.ACCOUNTNAME, FMApi.PASSWORD).getToken();
+        String token = FMApi.login(FMApi.ACCOUNTNAME, FMApi.PASSWORD).getFmToken();
         if ( token == null ){
             intent.putExtra("statusLogin", false);
             callBack(intent);
@@ -24,7 +24,7 @@ public class IntentServiceAPI extends IntentService {
         }else{
             intent.putExtra("statusLogin", true);
         }
-        JSONArray data = FMApi.getRecords(token, FMApi.LAYOUT_VGSALES, "_limit=25").getData();
+        JSONArray data = FMApi.getRecords(token, FMApi.LAYOUT_VGSALES, "_limit=25").getFmData();
         if ( data == null ){
             intent.putExtra("statusGetData", false);
             callBack(intent);

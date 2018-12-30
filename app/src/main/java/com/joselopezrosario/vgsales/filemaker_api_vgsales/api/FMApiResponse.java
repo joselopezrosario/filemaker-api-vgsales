@@ -1,65 +1,115 @@
 package com.joselopezrosario.vgsales.filemaker_api_vgsales.api;
 
 import org.json.JSONArray;
+import org.json.JSONObject;
+
+import okhttp3.Headers;
+import okhttp3.ResponseBody;
 
 public class FMApiResponse {
-        private int responseCode;
-        private boolean success;
-        private String token;
-        private JSONArray data;
-        private String message;
-        private String recordId;
+    private int httpResponseCode;
+    private ResponseBody httpResponseBody;
+    private Headers httpHeaders;
+    private String fmToken;
+    private JSONObject fmResponse;
+    private JSONArray fmData;
+    private String fmRecordId;
+    private boolean success;
+    private String customMessage;
 
-
-    FMApiResponse() {
+    public FMApiResponse() {
+        this.httpResponseCode = 0;
+        this.httpResponseBody = null;
+        this.httpHeaders = null;
+        this.fmToken = null;
+        this.fmResponse = null;
+        this.fmData = null;
+        this.fmRecordId = null;
         this.success = false;
+        this.customMessage = null;
     }
 
-    public int getResponseCode() {
-        return responseCode;
+    public int getHttpResponseCode() {
+        return httpResponseCode;
     }
 
-    void setResponseCode(int responseCode) {
-        this.responseCode = responseCode;
+    public void setHttpResponseCode(int httpResponseCode) {
+        this.httpResponseCode = httpResponseCode;
+    }
+
+    public ResponseBody getHttpResponseBody() {
+        return httpResponseBody;
+    }
+
+    public void setHttpResponseBody(ResponseBody httpResponseBody) {
+        this.httpResponseBody = httpResponseBody;
+    }
+
+    public Headers getHttpHeaders() {
+        return httpHeaders;
+    }
+
+    public void setHttpHeaders(Headers httpHeaders) {
+        this.httpHeaders = httpHeaders;
+    }
+
+    public String getFmToken() {
+        return fmToken;
+    }
+
+    public void setFmToken(String fmToken) {
+        this.fmToken = fmToken;
+    }
+
+    public JSONObject getFmResponse() {
+        return fmResponse;
+    }
+
+    public void setFmResponse(JSONObject fmResponse) {
+        this.fmResponse = fmResponse;
+    }
+
+    public JSONArray getFmData() {
+        return fmData;
+    }
+
+    public void setFmData(JSONArray fmData) {
+        this.fmData = fmData;
+    }
+
+    public String getFmRecordId() {
+        return fmRecordId;
+    }
+
+    public void setFmRecordId(String fmRecordId) {
+        this.fmRecordId = fmRecordId;
     }
 
     public boolean isSuccess() {
         return success;
     }
 
-    void setSuccess(boolean success) {
+    public void setSuccess(boolean success) {
         this.success = success;
     }
 
-    public String getToken() {
-        return token;
+    public String getCustomMessage() {
+        return customMessage;
     }
 
-    void setToken(String token) {
-        this.token = token;
+    public void setCustomMessage(String customMessage) {
+        this.customMessage = customMessage;
     }
 
-    public JSONArray getData() {
-        return data;
-    }
-
-    public void setData(JSONArray data) {
-        this.data = data;
-    }
-
-    public String getMessage() {
-        return message;
-    }
-
-    public void setMessage(String message) {
-        this.message = message;
-    }
-
-    public String getRecordId() {
-        return recordId;
-    }
-
-    public void setRecordId(String recordId) {
-        this.recordId = recordId;
+    public void clear() {
+        this.httpResponseCode = 0;
+        this.httpResponseBody = null;
+        this.httpHeaders = null;
+        this.fmToken = null;
+        this.fmResponse = null;
+        this.fmData = null;
+        this.fmRecordId = null;
+        this.success = false;
+        this.customMessage = null;
     }
 }

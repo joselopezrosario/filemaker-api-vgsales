@@ -1,13 +1,17 @@
 package com.joselopezrosario.vgsales.filemaker_api_vgsales.api;
 
 
+import android.support.annotation.Nullable;
+
 import com.joselopezrosario.vgsales.filemaker_api_vgsales.util.Utilities;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
 
+import okhttp3.Headers;
 import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
@@ -38,12 +42,17 @@ public final class FMApi {
     private static String RESPONSE = "response";
     private static String DATA = "data";
 
+    private static String POST = "POST";
+    private static String GET = "GET";
+    private static String PATCH = "PATCH";
+    private static String DELETE = "delete";
     private static String SESSIONS = "/sessions";
     private static String CONTENT_TYPE = "Content-Type";
     private static String APPLICATION_JSON = "application/json";
     private static String AUTHORIZATION = "Authorization";
     private static String BASIC = "Basic ";
     private static String BEARER = "Bearer ";
+    private static String FM_TOKEN_ELEMENT = "X-FM-Data-Access-Token";
 
     public FMApi() {
         throw new AssertionError("No API instances for you!");
@@ -55,7 +64,7 @@ public final class FMApi {
      *
      * @param accountName the FileMaker Account with fmrest privileges
      * @param password    the FileMaker account's password
-     * @return the response token
+     * @return an FMApiResponse object
      * See the FileMaker Data API documentation at yourhost/fmi/data/apidoc/#api-Authentication-Login
      */
     public static FMApiResponse login(String accountName, String password) {
@@ -63,34 +72,17 @@ public final class FMApi {
         if (accountName == null || password == null) {
             return fmar;
         }
-        final MediaType postDataMediaType = MediaType.parse("");
-        String encodedCredentials = Utilities.
-                encodeFileMakerCredentials(accountName, password);
-        if (encodedCredentials == null) {
+        String url = ENDPOINT + SESSIONS;
+        Headers headers = getBasicHeaders(accountName, password);
+        if (headers == null) {
             return fmar;
         }
-        OkHttpClient client = UnsecureOkHTTPClient.trustAllSslClient(new OkHttpClient());
-        Request request = new Request.Builder()
-                .url(ENDPOINT + SESSIONS)
-                .post(RequestBody.create(postDataMediaType, "{}"))
-                .addHeader(CONTENT_TYPE, APPLICATION_JSON)
-                .addHeader(AUTHORIZATION, BASIC + encodedCredentials)
-                .build();
-        Response response;
-        try {
-            response = client.newCall(request).execute();
-        } catch (IOException e) {
-            System.out.print("login IOException: " + e.toString());
+        RequestBody body = getBody(null);
+        fmar = runCall(POST, url, headers, body);
+        if (!fmar.isSuccess()) {
             return fmar;
         }
-        int code = response.code();
-        if (code != 200) {
-            System.out.print("login failed: " + response.code());
-            fmar.setResponseCode(code);
-            fmar.setSuccess(true);
-            return fmar;
-        }
-        fmar.setToken(response.header("X-FM-Data-Access-Token"));
+        fmar.setFmToken(fmar.getHttpHeaders().get(FM_TOKEN_ELEMENT));
         return fmar;
     }
 
@@ -101,7 +93,7 @@ public final class FMApi {
      * @param token  the FileMaker Data API Authorization token
      * @param layout the FileMaker layout
      * @param params additional parameters for offset, limit, sort, and portals
-     * @return the ResponseBody of the API call or null
+     * @return an FMApiResponse object
      */
     public static FMApiResponse getRecords(String token, String layout, String params) {
         FMApiResponse fmar = new FMApiResponse();
@@ -109,22 +101,61 @@ public final class FMApi {
             return fmar;
         }
         String url = ENDPOINT + "/layouts/" + layout + "/records?" + params;
+        Headers headers = getBearerHeaders(token);
+        fmar = runCall(GET, url, headers, null);
+        if (!fmar.isSuccess()) {
+            return fmar;
+        }
+        ResponseBody responseBody = fmar.getHttpResponseBody();
+        if (responseBody == null) {
+            return fmar;
+        }
+        try {
+            JSONObject responseBodyObject = new JSONObject(responseBody.string());
+            JSONObject fmResponse = responseBodyObject.getJSONObject(RESPONSE);
+            JSONArray fmData = fmResponse.getJSONArray(DATA);
+            fmar.setFmResponse(fmResponse);
+            fmar.setFmData(fmData);
+            fmar.setSuccess(true);
+            return fmar;
+        } catch (IOException | JSONException e) {
+            return fmar;
+        }
+    }
+
+    /**
+     * findRecords
+     * POST METHOD
+     *
+     * @param token  the FileMaker Data API Authorization token
+     * @param layout the FileMaker layout
+     * @param query  a stringify JSON objects containing field-find criteria pairs
+     * @return an FMApiResponse object
+     * For more information see yourhost/fmi/data/apidoc/#api-Find-Find
+     */
+    public static FMApiResponse findRecords(String token, String layout, RequestBody query) {
+        FMApiResponse fmar = new FMApiResponse();
+        if (token == null || layout == null || query == null) {
+            return fmar;
+        }
+        String url = ENDPOINT + "/layouts/" + layout + "/_find";
         OkHttpClient client = UnsecureOkHTTPClient.trustAllSslClient(new OkHttpClient());
         Request request = new Request.Builder()
                 .url(url)
                 .addHeader(CONTENT_TYPE, APPLICATION_JSON)
                 .addHeader(AUTHORIZATION, BEARER + token)
+                .post(query)
                 .build();
         Response APIResponse;
         try {
             APIResponse = client.newCall(request).execute();
         } catch (IOException e) {
-            System.out.print("getRecords IOException: " + e.toString());
+            System.out.print("findRecords IOException: " + e.toString());
             return fmar;
         }
         int code = APIResponse.code();
         if (code != 200) {
-            fmar.setResponseCode(code);
+            fmar.setHttpResponseCode(code);
             return fmar;
         }
         ResponseBody APIResponseBody = APIResponse.body();
@@ -134,7 +165,7 @@ public final class FMApi {
         try {
             JSONObject result = new JSONObject(APIResponseBody.string());
             JSONObject response = result.getJSONObject(RESPONSE);
-            fmar.setData(response.getJSONArray(DATA));
+            fmar.setFmData(response.getJSONArray(DATA));
             fmar.setSuccess(true);
             return fmar;
         } catch (IOException | JSONException e) {
@@ -146,47 +177,34 @@ public final class FMApi {
      * createRecord
      * POST METHOD
      *
-     * @param token     the FileMaker Data API Authorization token
-     * @param layout    the FileMaker layout
-     * @param fieldData a stringify JSON objects containing field-value pairs
-     * @return the new record's id
+     * @param token  the FileMaker Data API Authorization token
+     * @param layout the FileMaker layout
+     * @param body   a stringify JSON objects containing field-value pairs
+     * @return an FMApiResponse object
      * For more information see yourhost/fmi/data/apidoc/#api-Record-createRecord
      */
-    public static FMApiResponse createRecord(String token, String layout, RequestBody fieldData) {
+    public static FMApiResponse createRecord(String token, String layout, RequestBody body) {
         FMApiResponse fmar = new FMApiResponse();
-        if (token == null || layout == null || fieldData == null) {
+        if (token == null || layout == null || body == null) {
             return fmar;
         }
         String url = ENDPOINT + "/layouts/" + layout + "/records?";
-        OkHttpClient client = UnsecureOkHTTPClient.trustAllSslClient(new OkHttpClient());
-        Request request = new Request.Builder()
-                .url(url)
-                .addHeader("Content-Type", "application/json")
-                .addHeader("Authorization", ("Bearer " + token))
-                .post(fieldData)
-                .build();
-        Response response;
-        try {
-            response = client.newCall(request).execute();
-        } catch (IOException e) {
-            System.out.print("logout IOException: " + e.toString());
+        Headers headers = getBearerHeaders(token);
+        fmar = runCall(POST, url, headers, body);
+        if (!fmar.isSuccess()) {
             return fmar;
         }
-        int code = response.code();
-        if (code != 200) {
-            fmar.setResponseCode(code);
-            return fmar;
-        }
-        ResponseBody responseBody = response.body();
+        ResponseBody responseBody = fmar.getHttpResponseBody();
         if (responseBody == null) {
             return fmar;
         }
-        String responseString;
         try {
-            responseString = responseBody.string();
-            JSONObject responseObject = new JSONObject(responseString).getJSONObject("response");
+            JSONObject responseBodyObject = new JSONObject(responseBody.string());
+            JSONObject fmResponse = responseBodyObject.getJSONObject(RESPONSE);
+            String recordId = fmResponse.getString("recordId");
+            fmar.setFmResponse(fmResponse);
+            fmar.setFmRecordId(recordId);
             fmar.setSuccess(true);
-            fmar.setRecordId(responseObject.getString("recordId"));
             return fmar;
         } catch (IOException | JSONException e) {
             return fmar;
@@ -197,35 +215,21 @@ public final class FMApi {
      * editRecord
      * PATCH METHOD
      *
-     * @param token     the FileMaker Data API Authorization token
-     * @param layout    the FileMaker layout
-     * @param recordId  the record's id to edit
-     * @param fieldData a stringify JSON objects containing field-value pairs
-     * @return true if edit was successul, false if not
+     * @param token    the FileMaker Data API Authorization token
+     * @param layout   the FileMaker layout
+     * @param recordId the record's id to edit
+     * @param body     a stringify JSON objects containing field-value pairs
+     * @return an FMApiResponse object
+     * For more information see yourhost/fmi/data/apidoc/#api-Record-editRecord
      */
-    public static FMApiResponse editRecord(String token, String layout, String recordId, RequestBody fieldData) {
+    public static FMApiResponse editRecord(String token, String layout, String recordId, RequestBody body) {
         FMApiResponse fmar = new FMApiResponse();
         if (token == null || layout == null || recordId.isEmpty()) {
             return fmar;
         }
         String url = ENDPOINT + "/layouts/" + layout + "/records/" + recordId;
-        OkHttpClient client = UnsecureOkHTTPClient.trustAllSslClient(new OkHttpClient());
-        Request request = new Request.Builder()
-                .url(url)
-                .addHeader(CONTENT_TYPE, APPLICATION_JSON)
-                .addHeader(AUTHORIZATION, BEARER + token)
-                .patch(fieldData)
-                .build();
-        Response APIResponse;
-        try {
-            APIResponse = client.newCall(request).execute();
-        } catch (IOException e) {
-            System.out.print("editRecord IOException: " + e.toString());
-            return fmar;
-        }
-        fmar.setSuccess(true);
-        fmar.setResponseCode(APIResponse.code());
-        return fmar;
+        Headers headers = getBearerHeaders(token);
+        return runCall(PATCH, url, headers, body);
     }
 
     /**
@@ -244,23 +248,8 @@ public final class FMApi {
             return fmar;
         }
         String url = ENDPOINT + "/layouts/" + layout + "/records/" + recordId;
-        OkHttpClient client = UnsecureOkHTTPClient.trustAllSslClient(new OkHttpClient());
-        Request request = new Request.Builder()
-                .url(url)
-                .addHeader(CONTENT_TYPE, APPLICATION_JSON)
-                .addHeader(AUTHORIZATION, BEARER + token)
-                .delete()
-                .build();
-        Response APIResponse;
-        try {
-            APIResponse = client.newCall(request).execute();
-        } catch (IOException e) {
-            System.out.print("deleteRecord IOException: " + e.toString());
-            return fmar;
-        }
-        fmar.setSuccess(true);
-        fmar.setResponseCode(APIResponse.code());
-        return fmar;
+        Headers headers = getBearerHeaders(token);
+        return runCall(DELETE, url, headers, null);
     }
 
     /**
@@ -276,20 +265,94 @@ public final class FMApi {
             return fmar;
         }
         String url = ENDPOINT + "/sessions/" + token;
+        Headers headers = getBearerHeaders(token);
+        return runCall(DELETE, url, headers, null);
+    }
+
+    /**
+     * runCall
+     * Wrapper method to handle all HTTP connections and return an FMApiResponse object
+     *
+     * @param method  the HTTP method (GET, POST, PATCH, or DELETE)
+     * @param url     the API url
+     * @param headers the OKHttp Header object
+     * @param body    the OKHttp RequestBody object
+     * @return an FMApiResponse object
+     */
+    private static FMApiResponse runCall(String method, String url, Headers headers, RequestBody body) {
+        FMApiResponse fmar = new FMApiResponse();
         OkHttpClient client = UnsecureOkHTTPClient.trustAllSslClient(new OkHttpClient());
         Request request = new Request.Builder()
                 .url(url)
-                .addHeader(CONTENT_TYPE, APPLICATION_JSON)
-                .addHeader(AUTHORIZATION, BEARER + token)
-                .delete()
+                .headers(headers)
+                .method(method, body)
                 .build();
-        try (Response response = client.newCall(request).execute()) {
-            fmar.setResponseCode(response.code());
-            fmar.setSuccess(true);
-            return fmar;
+        Response response;
+        try {
+            response = client.newCall(request).execute();
         } catch (IOException e) {
-            System.out.print("logout IOException: " + e.toString());
+            fmar.setCustomMessage(e.toString());
             return fmar;
+        }
+        int code = response.code();
+        if (code != 200) {
+            fmar.setHttpResponseCode(code);
+            fmar.setHttpHeaders(response.headers());
+            return fmar;
+        }
+        fmar.setHttpHeaders(response.headers());
+        fmar.setHttpResponseBody(response.body());
+        fmar.setHttpResponseCode(code);
+        fmar.setSuccess(true);
+        return fmar;
+    }
+
+    /**
+     * getBasicHeaders
+     * Helper method to get the FileMaker Data API Basic Authorization Headers
+     *
+     * @param accountName the FileMaker account name with FMRest privileges
+     * @param password    the FileMaker account's password
+     * @return an OkHTTP Header object with Base64 encoded account name and password
+     */
+    private static Headers getBasicHeaders(String accountName, String password) {
+        String encodedCredentials = Utilities.encodeFileMakerCredentials(accountName, password);
+        if (encodedCredentials == null) {
+            return null;
+        }
+        return new Headers.Builder()
+                .add(CONTENT_TYPE, APPLICATION_JSON)
+                .add(AUTHORIZATION, BASIC + encodedCredentials)
+                .build();
+    }
+
+    /**
+     * getBearerHeaders
+     * Helper method to get the FileMaker Data API Bearer Authorization Headers
+     *
+     * @param token the FileMaker Data API token
+     * @return an OkHTTP Headers object with the Data API token
+     */
+    private static Headers getBearerHeaders(String token) {
+        return new Headers.Builder()
+                .add(CONTENT_TYPE, APPLICATION_JSON)
+                .add(AUTHORIZATION, BEARER + token)
+                .build();
+    }
+
+    /**
+     * getBody
+     * Helper method to build an OkHTTP RequestBody object from the provided content string
+     *
+     * @param content the body's content
+     * @return an OKHttp RequestBody object
+     */
+    private static RequestBody getBody(@Nullable String content) {
+        final MediaType postDataMediaType = MediaType.parse("");
+        if (content == null) {
+            return RequestBody.create(postDataMediaType, "{}");
+        } else {
+            return RequestBody.create(postDataMediaType, content);
         }
     }
 
