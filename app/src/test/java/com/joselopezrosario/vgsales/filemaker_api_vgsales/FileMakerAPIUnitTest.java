@@ -17,9 +17,22 @@ import okhttp3.RequestBody;
 
 @RunWith(RobolectricTestRunner.class)
 public class FileMakerAPIUnitTest extends Robolectric {
-    private static final String LAYOUT = "vgsales";
     private static String token = null;
-    private static JSONArray allRecords = null;
+    private static JSONArray getRecords = null;
+    private static final String fieldData =
+            "{\"fieldData\": {" +
+                    "\"" + DataAPI.FIELD_RANK + "\":0" + "," +
+                    "\"" + DataAPI.FIELD_NAME + "\":\"Jose's Game\"" + "," +
+                    "\"" + DataAPI.FIELD_PLATFORM + "\":\"Best Platform\"" + "," +
+                    "\"" + DataAPI.FIELD_YEAR + "\":\"2018\"" + "," +
+                    "\"" + DataAPI.FIELD_GENRE + "\":\"Arcade\"" + "," +
+                    "\"" + DataAPI.FIELD_PUBLISHER + "\":\"Best Publisher\"" + "," +
+                    "\"" + DataAPI.FIELD_NA_SALES + "\":10.0" + "," +
+                    "\"" + DataAPI.FIELD_EU_SALES + "\":11.0" + "," +
+                    "\"" + DataAPI.FIELD_JP_SALES + "\":12.0" + "," +
+                    "\"" + DataAPI.FIELD_OTHER_SALES + "\":13.0" + "," +
+                    "\"" + DataAPI.FIELD_GLOBAL_SALES + "\":46.0" +
+                    "}}";
 
     /**
      * setToken
@@ -27,8 +40,8 @@ public class FileMakerAPIUnitTest extends Robolectric {
      */
     @BeforeClass
     public static void setup() {
-        token = DataAPI.login("Jose", "ErS9WeQKa3BVJk5t");
-        allRecords = DataAPI.getRecords(token, LAYOUT, "_limit=10000");
+        token = DataAPI.login(DataAPI.ACCOUNTNAME, DataAPI.PASSWORD);
+        getRecords = DataAPI.getRecords(token, DataAPI.LAYOUT_VGSALES, "_limit=10000");
     }
 
     /**
@@ -45,8 +58,8 @@ public class FileMakerAPIUnitTest extends Robolectric {
      * Test to check if we successfully received all the records from the vgsales layout
      */
     @Test
-    public void validateFoundSet() {
-        assert allRecords != null;
+    public void validateGetRecords() {
+        assert getRecords != null;
     }
 
     /**
@@ -58,9 +71,9 @@ public class FileMakerAPIUnitTest extends Robolectric {
     public void validateRandomRecord() {
         JSONObject record;
         try {
-            int max = allRecords.length();
+            int max = getRecords.length();
             int randomNum = ThreadLocalRandom.current().nextInt(0, max);
-            record = allRecords.getJSONObject(randomNum).getJSONObject("fieldData");
+            record = getRecords.getJSONObject(randomNum).getJSONObject("fieldData");
             int id = record.getInt(DataAPI.FIELD_ID);
             int rank = record.getInt(DataAPI.FIELD_RANK);
             String name = record.getString(DataAPI.FIELD_NAME);
@@ -120,28 +133,14 @@ public class FileMakerAPIUnitTest extends Robolectric {
 
     @Test
     public void createAndDeleteRecord() {
-        String fieldData =
-                "{\"fieldData\": {" +
-                        "\"" + DataAPI.FIELD_RANK + "\":0" + "," +
-                        "\"" + DataAPI.FIELD_NAME + "\":\"Jose's Game\"" + "," +
-                        "\"" + DataAPI.FIELD_PLATFORM + "\":\"Best Platform\"" + "," +
-                        "\"" + DataAPI.FIELD_YEAR + "\":\"2018\"" + "," +
-                        "\"" + DataAPI.FIELD_GENRE + "\":\"Arcade\"" + "," +
-                        "\"" + DataAPI.FIELD_PUBLISHER + "\":\"Best Publisher\"" + "," +
-                        "\"" + DataAPI.FIELD_NA_SALES + "\":10.0" + "," +
-                        "\"" + DataAPI.FIELD_EU_SALES + "\":11.0" + "," +
-                        "\"" + DataAPI.FIELD_JP_SALES + "\":12.0" + "," +
-                        "\"" + DataAPI.FIELD_OTHER_SALES + "\":13.0" + "," +
-                        "\"" + DataAPI.FIELD_GLOBAL_SALES + "\":46.0" +
-                        "}}";
-        int newRecordId = DataAPI.createRecord(token, LAYOUT,
+        int newRecordId = DataAPI.createRecord(token,  DataAPI.LAYOUT_VGSALES,
                 RequestBody.create(MediaType.parse(""), fieldData),
                 "");
         boolean delete = false;
         if (newRecordId > 0) {
             delete =
                     DataAPI.deleteRecord(token,
-                            LAYOUT,
+                            DataAPI.LAYOUT_VGSALES,
                             String.valueOf(newRecordId),
                             "");
         }

@@ -14,7 +14,10 @@ import okhttp3.Response;
 import okhttp3.ResponseBody;
 
 @SuppressWarnings("SameParameterValue")
-public final class DataAPI {
+final class DataAPI {
+    final static String ACCOUNTNAME = "Jose";
+    final static String PASSWORD = "ErS9WeQKa3BVJk5t";
+    final static String LAYOUT_VGSALES = "vgsales";
     final static String FIELD_ID = "ID";
     final static String FIELD_RANK = "Rank";
     final static String FIELD_NAME = "Name";
@@ -163,16 +166,17 @@ public final class DataAPI {
         }
     }
 
-    /** deleteRecord
+    /**
+     * deleteRecord
      *
-     * @param token the FileMaker Data API Authorization token
-     * @param layout the FileMaker layout
+     * @param token    the FileMaker Data API Authorization token
+     * @param layout   the FileMaker layout
      * @param recordId the id of the record to delete
-     * @param params optional parameters
+     * @param params   optional parameters
      * @return true if the record is deleted, false if there's an error
      * For more information see yourhost/fmi/data/apidoc/#api-Record-deleteRecord
      */
-    static boolean deleteRecord(String token, String layout, String recordId, String params){
+    static boolean deleteRecord(String token, String layout, String recordId, String params) {
         if (token == null || layout == null || recordId.isEmpty()) {
             return false;
         }

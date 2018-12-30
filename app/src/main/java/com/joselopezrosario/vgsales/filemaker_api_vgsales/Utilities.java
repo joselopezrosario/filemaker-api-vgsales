@@ -1,10 +1,12 @@
 package com.joselopezrosario.vgsales.filemaker_api_vgsales;
 
+import android.content.Context;
 import android.util.Base64;
+import android.widget.Toast;
 
 import java.io.UnsupportedEncodingException;
 
-public final class Utilities {
+final class Utilities {
 
     public Utilities() { throw new AssertionError("No Utilities instances for you!"); }
 
@@ -29,5 +31,11 @@ public final class Utilities {
             System.out.print("Could not encode credentials: " + e.toString());
             return null;
         }
+    }
+
+    @SuppressWarnings("SameParameterValue")
+    public static void showToast(Context context, String message, int duration) {
+        Toast toast = Toast.makeText(context, message, duration);
+        toast.show();
     }
 }
