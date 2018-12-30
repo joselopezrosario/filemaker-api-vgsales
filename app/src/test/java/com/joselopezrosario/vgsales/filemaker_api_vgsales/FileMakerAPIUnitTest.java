@@ -17,6 +17,7 @@ import okhttp3.RequestBody;
 
 @RunWith(RobolectricTestRunner.class)
 public class FileMakerAPIUnitTest extends Robolectric {
+    private static final String LAYOUT = "vgsales";
     private static String token = null;
     private static JSONArray allRecords = null;
 
@@ -27,7 +28,7 @@ public class FileMakerAPIUnitTest extends Robolectric {
     @BeforeClass
     public static void setup() {
         token = DataAPI.login("Jose", "ErS9WeQKa3BVJk5t");
-        allRecords = DataAPI.getRecords(token, "vgsales", "_limit=10000");
+        allRecords = DataAPI.getRecords(token, LAYOUT, "_limit=10000");
     }
 
     /**
@@ -58,7 +59,7 @@ public class FileMakerAPIUnitTest extends Robolectric {
         JSONObject record;
         try {
             int max = allRecords.length();
-            int randomNum = ThreadLocalRandom.current().nextInt(0, max );
+            int randomNum = ThreadLocalRandom.current().nextInt(0, max);
             record = allRecords.getJSONObject(randomNum).getJSONObject("fieldData");
             int id = record.getInt(DataAPI.FIELD_ID);
             int rank = record.getInt(DataAPI.FIELD_RANK);
@@ -109,8 +110,8 @@ public class FileMakerAPIUnitTest extends Robolectric {
             if (global_sales >= 0) {
                 score++;
             }
-            System.out.print("ID: " + id+"\n");
-            System.out.print("Name: " + name+"\n");
+            System.out.print("ID: " + id + "\n");
+            System.out.print("Name: " + name + "\n");
             assert score == 12;
         } catch (JSONException e) {
             assert false;
@@ -118,25 +119,33 @@ public class FileMakerAPIUnitTest extends Robolectric {
     }
 
     @Test
-    public void createAndDeleteRecord(){
+    public void createAndDeleteRecord() {
         String fieldData =
                 "{\"fieldData\": {" +
-                        "\""+ DataAPI.FIELD_RANK + "\":0" + "," +
-                        "\""+ DataAPI.FIELD_NAME + "\":\"Jose's Game\"" + "," +
-                        "\""+ DataAPI.FIELD_PLATFORM + "\":\"Best Platform\"" + "," +
-                        "\""+ DataAPI.FIELD_YEAR + "\":\"2018\"" + "," +
-                        "\""+ DataAPI.FIELD_GENRE + "\":\"Arcade\"" + "," +
-                        "\""+ DataAPI.FIELD_PUBLISHER + "\":\"Android\"" + "," +
-                        "\""+ DataAPI.FIELD_NA_SALES + "\":0" + "," +
-                        "\""+ DataAPI.FIELD_EU_SALES + "\":0" + "," +
-                        "\""+ DataAPI.FIELD_JP_SALES + "\":0" + "," +
-                        "\""+ DataAPI.FIELD_OTHER_SALES + "\":0" + "," +
-                        "\""+ DataAPI.FIELD_GLOBAL_SALES + "\":0" +
+                        "\"" + DataAPI.FIELD_RANK + "\":0" + "," +
+                        "\"" + DataAPI.FIELD_NAME + "\":\"Jose's Game\"" + "," +
+                        "\"" + DataAPI.FIELD_PLATFORM + "\":\"Best Platform\"" + "," +
+                        "\"" + DataAPI.FIELD_YEAR + "\":\"2018\"" + "," +
+                        "\"" + DataAPI.FIELD_GENRE + "\":\"Arcade\"" + "," +
+                        "\"" + DataAPI.FIELD_PUBLISHER + "\":\"Best Publisher\"" + "," +
+                        "\"" + DataAPI.FIELD_NA_SALES + "\":10.0" + "," +
+                        "\"" + DataAPI.FIELD_EU_SALES + "\":11.0" + "," +
+                        "\"" + DataAPI.FIELD_JP_SALES + "\":12.0" + "," +
+                        "\"" + DataAPI.FIELD_OTHER_SALES + "\":13.0" + "," +
+                        "\"" + DataAPI.FIELD_GLOBAL_SALES + "\":46.0" +
                         "}}";
-        int newRecordId = DataAPI.createRecord(token, "vgsales",
-                RequestBody.create(MediaType.parse(""),fieldData),
+        int newRecordId = DataAPI.createRecord(token, LAYOUT,
+                RequestBody.create(MediaType.parse(""), fieldData),
                 "");
-        assert newRecordId > 0;
+        boolean delete = false;
+        if (newRecordId > 0) {
+            delete =
+                    DataAPI.deleteRecord(token,
+                            LAYOUT,
+                            String.valueOf(newRecordId),
+                            "");
+        }
+        assert newRecordId > 0 && delete;
     }
 
     /**

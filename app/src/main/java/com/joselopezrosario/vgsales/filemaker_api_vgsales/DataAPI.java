@@ -163,6 +163,37 @@ public final class DataAPI {
         }
     }
 
+    /** deleteRecord
+     *
+     * @param token the FileMaker Data API Authorization token
+     * @param layout the FileMaker layout
+     * @param recordId the id of the record to delete
+     * @param params optional parameters
+     * @return true if the record is deleted, false if there's an error
+     * For more information see yourhost/fmi/data/apidoc/#api-Record-deleteRecord
+     */
+    static boolean deleteRecord(String token, String layout, String recordId, String params){
+        if (token == null || layout == null || recordId.isEmpty()) {
+            return false;
+        }
+        String url = ENDPOINT + "/layouts/" + layout + "/records/" + recordId;
+        OkHttpClient client = UnsecureOkHTTPClient.trustAllSslClient(new OkHttpClient());
+        Request request = new Request.Builder()
+                .url(url)
+                .addHeader("Content-Type", "application/json")
+                .addHeader("Authorization", ("Bearer " + token))
+                .delete()
+                .build();
+        Response APIResponse;
+        try {
+            APIResponse = client.newCall(request).execute();
+        } catch (IOException e) {
+            System.out.print("deleteRecord IOException: " + e.toString());
+            return false;
+        }
+        return APIResponse.code() == 200;
+    }
+
     /**
      * logout
      *
