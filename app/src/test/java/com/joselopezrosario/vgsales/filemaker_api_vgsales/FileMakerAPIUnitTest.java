@@ -37,10 +37,13 @@ public class FileMakerAPIUnitTest extends Robolectric {
                     "\"" + FMApi.FIELD_OTHER_SALES + "\":13.0" + "," +
                     "\"" + FMApi.FIELD_GLOBAL_SALES + "\":46.0" +
                     "}}";
-
+    private static final String findData =
+            "{\"query\":[{\"Publisher\": \"=Nintendo\", \"Platform\" : \"=NES\"}]," +
+                    "\"limit\": \"100\"," +
+                    "\"offset\": \"1\"}";
     /**
      * setUp
-     * Set the FileMaker Data API token and get a foundset of 10,000 records
+     * Set the FileMaker Data API token and get a foundset of records
      */
     @BeforeClass
     public static void setup() {
@@ -49,7 +52,7 @@ public class FileMakerAPIUnitTest extends Robolectric {
         fmar = FMApi.getRecords(
                 token,
                 FMApi.LAYOUT_VGSALES,
-                "_limit=10000");
+                "_limit=200");
         getRecords = fmar.getFmData();
     }
 
@@ -188,11 +191,28 @@ public class FileMakerAPIUnitTest extends Robolectric {
         boolean delete;
         fmar.clear();
         fmar = FMApi.deleteRecord(
-                    token,
-                    FMApi.LAYOUT_VGSALES,
-                    newRecordId);
+                token,
+                FMApi.LAYOUT_VGSALES,
+                newRecordId);
         delete = fmar.isSuccess();
         assert newRecordId != null && edit && delete;
+    }
+
+    /**
+     * findRecords
+     * Find records and test if we receive them
+     */
+    @Test
+    public void findRecords() {
+        FMApiResponse fmar;
+        RequestBody query = RequestBody.create(MediaType.parse(""), findData);
+        fmar = FMApi.findRecords(token, FMApi.LAYOUT_VGSALES, query);
+        if ( fmar.getHttpResponseCode() != 200 || fmar.getFmData() == null){
+            assert false;
+            return;
+        }
+        int count = fmar.getFmData().length();
+        assert count > 0;
     }
 
     /**

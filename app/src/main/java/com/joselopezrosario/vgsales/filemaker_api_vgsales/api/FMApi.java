@@ -139,33 +139,21 @@ public final class FMApi {
             return fmar;
         }
         String url = ENDPOINT + "/layouts/" + layout + "/_find";
-        OkHttpClient client = UnsecureOkHTTPClient.trustAllSslClient(new OkHttpClient());
-        Request request = new Request.Builder()
-                .url(url)
-                .addHeader(CONTENT_TYPE, APPLICATION_JSON)
-                .addHeader(AUTHORIZATION, BEARER + token)
-                .post(query)
-                .build();
-        Response APIResponse;
-        try {
-            APIResponse = client.newCall(request).execute();
-        } catch (IOException e) {
-            System.out.print("findRecords IOException: " + e.toString());
+        Headers headers = getBearerHeaders(token);
+        fmar = runCall(POST, url, headers, query);
+        if (!fmar.isSuccess()) {
             return fmar;
         }
-        int code = APIResponse.code();
-        if (code != 200) {
-            fmar.setHttpResponseCode(code);
-            return fmar;
-        }
-        ResponseBody APIResponseBody = APIResponse.body();
-        if (APIResponseBody == null) {
+        ResponseBody responseBody = fmar.getHttpResponseBody();
+        if (responseBody == null) {
             return fmar;
         }
         try {
-            JSONObject result = new JSONObject(APIResponseBody.string());
-            JSONObject response = result.getJSONObject(RESPONSE);
-            fmar.setFmData(response.getJSONArray(DATA));
+            JSONObject responseBodyObject = new JSONObject(responseBody.string());
+            JSONObject fmResponse = responseBodyObject.getJSONObject(RESPONSE);
+            JSONArray fmData = fmResponse.getJSONArray(DATA);
+            fmar.setFmResponse(fmResponse);
+            fmar.setFmData(fmData);
             fmar.setSuccess(true);
             return fmar;
         } catch (IOException | JSONException e) {
