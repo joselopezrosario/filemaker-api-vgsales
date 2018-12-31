@@ -24,7 +24,7 @@ These instructions will get you a copy of the project up and running on your loc
 2. Clone this repository in Android Studio
 3. Host the VideoGameSales database in FileMaker Server - you can use a local server
 4. Enable the FileMaker Data API
-5. Modify the host of the ENDPOINT variable in the [DataAPI.java](https://github.com/joselopezrosario/filemaker-api-vgsales/blob/master/app/src/main/java/com/joselopezrosario/vgsales/filemaker_api_vgsales/DataAPI.java) class to use your own server
+5. Modify the host of the ENDPOINT variable in the [FMApi.java](https://github.com/joselopezrosario/filemaker-api-vgsales/blob/master/app/src/main/java/com/joselopezrosario/vgsales/filemaker_api_vgsales/api/FMApi.java) class to use your own server
 
 ### Warning
 
