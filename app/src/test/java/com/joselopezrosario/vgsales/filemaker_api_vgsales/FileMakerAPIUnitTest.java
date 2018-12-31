@@ -21,39 +21,16 @@ import okhttp3.RequestBody;
 @RunWith(RobolectricTestRunner.class)
 public class FileMakerAPIUnitTest extends Robolectric {
     private static String token = null;
-    private static JSONArray getRecords = null;
     private static final String emptyFieldData = "{\"fieldData\": {}}";
-    private static final String fieldData =
-            "{\"fieldData\": {" +
-                    "\"" + FMApi.FIELD_RANK + "\":0" + "," +
-                    "\"" + FMApi.FIELD_NAME + "\":\"Jose's Game\"" + "," +
-                    "\"" + FMApi.FIELD_PLATFORM + "\":\"Best Platform\"" + "," +
-                    "\"" + FMApi.FIELD_YEAR + "\":\"2018\"" + "," +
-                    "\"" + FMApi.FIELD_GENRE + "\":\"Arcade\"" + "," +
-                    "\"" + FMApi.FIELD_PUBLISHER + "\":\"Best Publisher\"" + "," +
-                    "\"" + FMApi.FIELD_NA_SALES + "\":10.0" + "," +
-                    "\"" + FMApi.FIELD_EU_SALES + "\":11.0" + "," +
-                    "\"" + FMApi.FIELD_JP_SALES + "\":12.0" + "," +
-                    "\"" + FMApi.FIELD_OTHER_SALES + "\":13.0" + "," +
-                    "\"" + FMApi.FIELD_GLOBAL_SALES + "\":46.0" +
-                    "}}";
-    private static final String findData =
-            "{\"query\":[{\"Publisher\": \"=Nintendo\", \"Platform\" : \"=NES\"}]," +
-                    "\"limit\": \"100\"," +
-                    "\"offset\": \"1\"}";
+
     /**
      * setUp
-     * Set the FileMaker Data API token and get a foundset of records
+     * Set the FileMaker Data API token
      */
     @BeforeClass
     public static void setup() {
         FMApiResponse fmar = FMApi.login(FMApi.ACCOUNTNAME, FMApi.PASSWORD);
         token = fmar.getFmToken();
-        fmar = FMApi.getRecords(
-                token,
-                FMApi.LAYOUT_VGSALES,
-                "_limit=200");
-        getRecords = fmar.getFmData();
     }
 
     /**
@@ -71,6 +48,11 @@ public class FileMakerAPIUnitTest extends Robolectric {
      */
     @Test
     public void validateGetRecords() {
+        FMApiResponse fmar = FMApi.getRecords(
+                token,
+                FMApi.LAYOUT_VGSALES,
+                "_limit=10");
+        JSONArray getRecords = fmar.getFmData();
         assert getRecords != null;
     }
 
@@ -81,6 +63,11 @@ public class FileMakerAPIUnitTest extends Robolectric {
      */
     @Test
     public void validateRandomRecord() {
+        FMApiResponse fmar = FMApi.getRecords(
+                token,
+                FMApi.LAYOUT_VGSALES,
+                "_limit=1000");
+        JSONArray getRecords = fmar.getFmData();
         JSONObject record;
         try {
             int max = getRecords.length();
@@ -150,11 +137,16 @@ public class FileMakerAPIUnitTest extends Robolectric {
      */
     @Test
     public void createAndDeleteRecord() {
+        String createEditQuery = createEditQuery();
+        if (createEditQuery == null) {
+            assert false;
+            return;
+        }
         FMApiResponse fmar;
         fmar = FMApi.createRecord(
                 token,
                 FMApi.LAYOUT_VGSALES,
-                RequestBody.create(MediaType.parse(""), fieldData)
+                RequestBody.create(MediaType.parse(""), createEditQuery)
         );
         String newRecordId = fmar.getFmRecordId();
         boolean delete = false;
@@ -173,6 +165,11 @@ public class FileMakerAPIUnitTest extends Robolectric {
      */
     @Test
     public void createEditAndDeleteRecord() {
+        String createEditQuery = createEditQuery();
+        if (createEditQuery == null) {
+            assert false;
+            return;
+        }
         FMApiResponse fmar;
         RequestBody createRequestBody = RequestBody.create(MediaType.parse(""), emptyFieldData);
         fmar = FMApi.createRecord(
@@ -180,7 +177,7 @@ public class FileMakerAPIUnitTest extends Robolectric {
                 FMApi.LAYOUT_VGSALES,
                 createRequestBody);
         String newRecordId = fmar.getFmRecordId();
-        RequestBody editRequestBody = RequestBody.create(MediaType.parse(""), fieldData);
+        RequestBody editRequestBody = RequestBody.create(MediaType.parse(""), createEditQuery);
         fmar.clear();
         fmar = FMApi.editRecord(
                 token,
@@ -204,10 +201,15 @@ public class FileMakerAPIUnitTest extends Robolectric {
      */
     @Test
     public void findRecords() {
+        String jsonQuery = createFindQuery();
+        if (jsonQuery == null) {
+            assert false;
+            return;
+        }
         FMApiResponse fmar;
-        RequestBody query = RequestBody.create(MediaType.parse(""), findData);
+        RequestBody query = RequestBody.create(MediaType.parse(""), jsonQuery);
         fmar = FMApi.findRecords(token, FMApi.LAYOUT_VGSALES, query);
-        if ( fmar.getHttpResponseCode() != 200 || fmar.getFmData() == null){
+        if (fmar.getHttpResponseCode() != 200 || fmar.getFmData() == null) {
             assert false;
             return;
         }
@@ -223,5 +225,49 @@ public class FileMakerAPIUnitTest extends Robolectric {
     public static void logOut() {
         boolean logout = FMApi.logOut(token).isSuccess();
         assert logout;
+    }
+
+    /**
+     * createQuery
+     *
+     * @return a stringify JSON query formatted for the FileMaker Data API
+     */
+    private String createFindQuery() {
+        try {
+            JSONObject json = new JSONObject();
+            JSONArray queryArray = new JSONArray();
+            JSONObject pairs = new JSONObject().
+                    put(FMApi.FIELD_PUBLISHER, "=Nintendo").
+                    put(FMApi.FIELD_PLATFORM, "=NES");
+            queryArray.put(pairs);
+            json.put("query", queryArray);
+            json.put("limit", "10");
+            json.put("offset", "1");
+            return json.toString();
+        } catch (JSONException e) {
+            return null;
+        }
+    }
+
+    private String createEditQuery(){
+        try {
+            JSONObject json = new JSONObject();
+            JSONObject pairs = new JSONObject().
+                    put(FMApi.FIELD_RANK, "0").
+                    put(FMApi.FIELD_NAME, "Jose's Game").
+                    put(FMApi.FIELD_PLATFORM, "Best Platform").
+                    put(FMApi.FIELD_YEAR, "2018").
+                    put(FMApi.FIELD_GENRE, "Arcade").
+                    put(FMApi.FIELD_PUBLISHER, "Best Publisher").
+                    put(FMApi.FIELD_NA_SALES, "10.0").
+                    put(FMApi.FIELD_EU_SALES, "11.0").
+                    put(FMApi.FIELD_JP_SALES, "12.0").
+                    put(FMApi.FIELD_OTHER_SALES, "13.0").
+                    put(FMApi.FIELD_GLOBAL_SALES, "46.0");
+            json.put("fieldData", pairs.toString());
+            return json.toString();
+        } catch (JSONException e) {
+            return null;
+        }
     }
 }
