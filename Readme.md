@@ -4,8 +4,8 @@ An Android app to learn how to interact with the FileMaker Server 17 Data API.
 
 ### Screenshots
 
-* [MainActvity](https://raw.githubusercontent.com/joselopezrosario/filemaker-api-vgsales/master/project-screenshots/MainActivity.png)
-* [SearchActvitiy](https://raw.githubusercontent.com/joselopezrosario/filemaker-api-vgsales/master/project-screenshots/SearchActvitiy.png)
+* [MainActivity](https://raw.githubusercontent.com/joselopezrosario/filemaker-api-vgsales/master/project-screenshots/MainActivity.png)
+* [SearchActivity](https://raw.githubusercontent.com/joselopezrosario/filemaker-api-vgsales/master/project-screenshots/SearchActvitiy.png)
 
 ## Data Source
 
@@ -29,7 +29,7 @@ These instructions will get you a copy of the project up and running on your loc
 2. Clone this repository in Android Studio
 3. Host the VideoGameSales database in FileMaker Server - you can use a local server
 4. Enable the FileMaker Data API
-5. Modify the ENDPOINT, ACCOUNTNAME and PASSWORD variables in the [FMApi.java](https://github.com/joselopezrosario/filemaker-api-vgsales/blob/master/app/src/main/java/com/joselopezrosario/vgsales/filemaker_api_vgsales/api/FMApi.java) class to use your own infor
+5. Modify the ENDPOINT, ACCOUNTNAME and PASSWORD variables in the [FMApi.java](https://github.com/joselopezrosario/filemaker-api-vgsales/blob/master/app/src/main/java/com/joselopezrosario/vgsales/filemaker_api_vgsales/api/FMApi.java) class to use your own info
 
 ### Warning
 

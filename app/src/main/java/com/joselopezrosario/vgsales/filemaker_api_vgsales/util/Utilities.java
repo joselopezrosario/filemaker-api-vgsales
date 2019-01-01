@@ -8,11 +8,9 @@ import java.io.UnsupportedEncodingException;
 
 public final class Utilities {
 
-    public Utilities() { throw new AssertionError("No Utilities instances for you!"); }
-
     /**
      * encodeFileMakerCredentials
-     * @param accountName the FileMaker account with fmrest privilegess
+     * @param accountName the FileMaker account with fmrest privileges
      * @param password the FileMaker account's password
      * @return the Base54 encoded credentials
      */

@@ -21,7 +21,7 @@ import okhttp3.ResponseBody;
 
 @SuppressWarnings("SameParameterValue")
 public final class FMApi {
-    private static String ENDPOINT = "https://192.168.0.7/fmi/data/v1/databases/VideoGameSales";
+    private static final String ENDPOINT = "https://192.168.0.7/fmi/data/v1/databases/VideoGameSales";
     public final static String ACCOUNTNAME = "Jose";
     public final static String PASSWORD = "ErS9WeQKa3BVJk5t";
 
@@ -38,25 +38,22 @@ public final class FMApi {
     public final static String FIELD_JP_SALES = "JP_Sales";
     public final static String FIELD_OTHER_SALES = "Other_Sales";
     public final static String FIELD_GLOBAL_SALES = "Global_Sales";
+    public final static String QUERY = "query";
+    public final static String LIMIT = "limit";
+    public final static String OFFSET = "offset";
 
-    private static String RESPONSE = "response";
-    private static String DATA = "data";
-
-    private static String POST = "POST";
-    private static String GET = "GET";
-    private static String PATCH = "PATCH";
-    private static String DELETE = "delete";
-    private static String SESSIONS = "/sessions";
-    private static String CONTENT_TYPE = "Content-Type";
-    private static String APPLICATION_JSON = "application/json";
-    private static String AUTHORIZATION = "Authorization";
-    private static String BASIC = "Basic ";
-    private static String BEARER = "Bearer ";
-    private static String FM_TOKEN_ELEMENT = "X-FM-Data-Access-Token";
-
-    public FMApi() {
-        throw new AssertionError("No API instances for you!");
-    }
+    private static final String RESPONSE = "response";
+    private static final String DATA = "data";
+    private static final String POST = "POST";
+    private static final String PATCH = "PATCH";
+    private static final String DELETE = "delete";
+    private static final String SESSIONS = "/sessions";
+    private static final String CONTENT_TYPE = "Content-Type";
+    private static final String APPLICATION_JSON = "application/json";
+    private static final String AUTHORIZATION = "Authorization";
+    private static final String BASIC = "Basic ";
+    private static final String BEARER = "Bearer ";
+    private static final String FM_TOKEN_ELEMENT = "X-FM-Data-Access-Token";
 
     /**
      * login
@@ -102,6 +99,7 @@ public final class FMApi {
         }
         String url = ENDPOINT + "/layouts/" + layout + "/records?" + params;
         Headers headers = getBearerHeaders(token);
+        String GET = "GET";
         fmar = runCall(GET, url, headers, null);
         if (!fmar.isSuccess()) {
             return fmar;
@@ -269,7 +267,7 @@ public final class FMApi {
      */
     private static FMApiResponse runCall(String method, String url, Headers headers, RequestBody body) {
         FMApiResponse fmar = new FMApiResponse();
-        OkHttpClient client = UnsecureOkHTTPClient.trustAllSslClient(new OkHttpClient());
+        OkHttpClient client = UnsecuredOkHTTPClient.trustAllSslClient(new OkHttpClient());
         Request request = new Request.Builder()
                 .url(url)
                 .headers(headers)
@@ -343,5 +341,4 @@ public final class FMApi {
             return RequestBody.create(postDataMediaType, content);
         }
     }
-
 }

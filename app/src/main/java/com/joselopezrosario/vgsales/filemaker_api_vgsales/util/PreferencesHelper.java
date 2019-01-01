@@ -8,6 +8,7 @@ import android.content.SharedPreferences;
  * Created by jose on 1/10/17.
  */
 
+@SuppressWarnings("unused")
 public class PreferencesHelper {
 
     private final SharedPreferences prefs;

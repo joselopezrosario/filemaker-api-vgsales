@@ -26,8 +26,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 public class MainActivity extends AppCompatActivity {
-    RecyclerView.Adapter mAdapter;
-    RecyclerView mRecyclerView;
+    private RecyclerView mRecyclerView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -93,7 +92,7 @@ public class MainActivity extends AppCompatActivity {
             }
             try {
                 JSONArray dataArray = new JSONArray(data);
-                mAdapter = new VideoGamesListAdapter(getApplicationContext(), dataArray);
+                RecyclerView.Adapter mAdapter = new VideoGamesListAdapter(getApplicationContext(), dataArray);
                 mRecyclerView.setAdapter(mAdapter);
             } catch (JSONException e) {
                 System.out.println("Parsing error");
@@ -114,17 +113,17 @@ public class MainActivity extends AppCompatActivity {
                     .put(FMApi.FIELD_GENRE, "=*")
                     .put(FMApi.FIELD_NAME, "=*");
             queryArray.put(pairs);
-            json.put("query", queryArray);
-            json.put("limit", "25");
-            json.put("offset", "1");
+            json.put(FMApi.QUERY, queryArray);
+            json.put(FMApi.LIMIT, "25");
+            json.put(FMApi.OFFSET, "1");
             PreferencesHelper prefs = new PreferencesHelper(getApplicationContext());
             prefs.save(FMApi.FIELD_PLATFORM, "NES");
             prefs.save(FMApi.FIELD_PUBLISHER, "Nintendo");
             prefs.save(FMApi.FIELD_GENRE, "");
             prefs.save(FMApi.FIELD_NAME, "");
-            prefs.save("query", json.toString());
-            prefs.save("limit", "25");
-            prefs.save("offset", "1");
+            prefs.save(FMApi.QUERY, json.toString());
+            prefs.save(FMApi.LIMIT, "25");
+            prefs.save(FMApi.OFFSET, "1");
         } catch (JSONException e) {
             System.out.println(e.toString());
 

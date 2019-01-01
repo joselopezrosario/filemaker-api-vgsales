@@ -1,6 +1,7 @@
 package com.joselopezrosario.vgsales.filemaker_api_vgsales.adapter;
 
 import android.content.Context;
+import android.support.annotation.NonNull;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -15,8 +16,8 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 public class VideoGamesListAdapter extends RecyclerView.Adapter<VideoGamesListAdapter.ViewHolder> {
-    private Context mContext;
-    private JSONArray mDataset;
+    private final Context mContext;
+    private final JSONArray mDataset;
 
     public VideoGamesListAdapter(Context context, JSONArray myDataset) {
         mContext = context;
@@ -24,13 +25,13 @@ public class VideoGamesListAdapter extends RecyclerView.Adapter<VideoGamesListAd
     }
 
     class ViewHolder extends RecyclerView.ViewHolder {
-        TextView TextViewRank;
-        TextView TextViewName;
-        TextView TextViewPlatform;
-        TextView TextViewYear;
-        TextView TextViewGenre;
-        TextView TextViewPublisher;
-        TextView TextViewGlobalSales;
+        final TextView TextViewRank;
+        final TextView TextViewName;
+        final TextView TextViewPlatform;
+        final TextView TextViewYear;
+        final TextView TextViewGenre;
+        final TextView TextViewPublisher;
+        final TextView TextViewGlobalSales;
 
         ViewHolder(View view) {
             super(view);
@@ -44,15 +45,16 @@ public class VideoGamesListAdapter extends RecyclerView.Adapter<VideoGamesListAd
         }
     }
 
+    @NonNull
     @Override
-    public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+    public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View v = LayoutInflater.from(mContext)
                 .inflate(R.layout.content_main, parent, false);
         return new ViewHolder(v);
     }
 
     @Override
-    public void onBindViewHolder(ViewHolder holder, int position) {
+    public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         try{
             JSONObject record = mDataset.getJSONObject(position).getJSONObject("fieldData");
             holder.TextViewRank.setText(record.getString(FMApi.FIELD_RANK));

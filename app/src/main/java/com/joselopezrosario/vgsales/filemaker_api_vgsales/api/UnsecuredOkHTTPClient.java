@@ -20,7 +20,7 @@ import okhttp3.OkHttpClient;
  * provided by FileMaker Server or other self-signed certificates
  * Source: https://www.stubbornjava.com/posts/okhttpclient-trust-all-ssl-certificates
  */
-final class UnsecureOkHTTPClient {
+final class UnsecuredOkHTTPClient {
     public static OkHttpClient trustAllSslClient(OkHttpClient client) {
         OkHttpClient.Builder builder = client.newBuilder();
         builder.sslSocketFactory(trustAllSslSocketFactory, (X509TrustManager) trustAllCerts[0]);

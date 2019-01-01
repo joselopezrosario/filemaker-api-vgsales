@@ -19,12 +19,12 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 public class SearchActivity extends AppCompatActivity {
-    TextInputEditText vPlatform;
-    TextInputEditText vPublisher;
-    TextInputEditText vGenre;
-    TextInputEditText vName;
-    TextInputEditText vLimit;
-    TextInputEditText vOffset;
+    private TextInputEditText vPlatform;
+    private TextInputEditText vPublisher;
+    private TextInputEditText vGenre;
+    private TextInputEditText vName;
+    private TextInputEditText vLimit;
+    private TextInputEditText vOffset;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -47,8 +47,8 @@ public class SearchActivity extends AppCompatActivity {
         vPublisher.setText(prefs.loadString(FMApi.FIELD_PUBLISHER,""));
         vGenre.setText(prefs.loadString(FMApi.FIELD_GENRE,""));
         vName.setText(prefs.loadString(FMApi.FIELD_NAME,""));
-        vLimit.setText(prefs.loadString("limit","1"));
-        vOffset.setText(prefs.loadString("offset","1"));
+        vLimit.setText(prefs.loadString(FMApi.LIMIT,"1"));
+        vOffset.setText(prefs.loadString(FMApi.OFFSET,"1"));
         final Button findButton = findViewById(R.id.find);
         findButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -58,7 +58,7 @@ public class SearchActivity extends AppCompatActivity {
         });
     }
 
-    public void find() {
+    private void find() {
        SaveQueryResult sqr = saveQuery();
        if ( !sqr.isSuccess()){
            Utilities.showToast(getApplicationContext(),sqr.getMessage(), Toast.LENGTH_SHORT);
@@ -119,17 +119,17 @@ public class SearchActivity extends AppCompatActivity {
                     .put(FMApi.FIELD_GENRE, "=" + fmqString(genre))
                     .put(FMApi.FIELD_NAME, "=" + fmqString(name));
             queryArray.put(pairs);
-            json.put("query", queryArray);
-            json.put("limit", limit);
-            json.put("offset", offset);
+            json.put(FMApi.QUERY, queryArray);
+            json.put(FMApi.LIMIT, limit);
+            json.put(FMApi.OFFSET, offset);
             PreferencesHelper prefs = new PreferencesHelper(getApplicationContext());
             prefs.save(FMApi.FIELD_PLATFORM, platform);
             prefs.save(FMApi.FIELD_PUBLISHER, publisher);
             prefs.save(FMApi.FIELD_GENRE, genre);
             prefs.save(FMApi.FIELD_NAME, name);
-            prefs.save("query", json.toString());
-            prefs.save("limit", limit);
-            prefs.save("offset", offset);
+            prefs.save(FMApi.QUERY, json.toString());
+            prefs.save(FMApi.LIMIT, limit);
+            prefs.save(FMApi.OFFSET, offset);
             sqr.setSuccess(true);
             return sqr;
         } catch (JSONException e) {
@@ -141,7 +141,7 @@ public class SearchActivity extends AppCompatActivity {
     }
 
     /**
-     * fmqString (Filemaker Query String)
+     * fmqString (FileMaker Query String)
      * If a value for the query is empty or null, convert it to an asterisk (*)
      * In FileMaker, the * operator is used to search for all values
      * @param value the strings to be used in a query
@@ -155,6 +155,10 @@ public class SearchActivity extends AppCompatActivity {
         }
     }
 
+    /**
+     * saveQueryResults
+     * An object to pass back the results of saveQuery()
+     */
     private class SaveQueryResult{
         boolean success;
         String message;

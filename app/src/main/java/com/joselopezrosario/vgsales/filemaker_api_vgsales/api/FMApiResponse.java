@@ -6,6 +6,7 @@ import org.json.JSONObject;
 import okhttp3.Headers;
 import okhttp3.ResponseBody;
 
+@SuppressWarnings("unused")
 public class FMApiResponse {
     private int httpResponseCode;
     private ResponseBody httpResponseBody;
