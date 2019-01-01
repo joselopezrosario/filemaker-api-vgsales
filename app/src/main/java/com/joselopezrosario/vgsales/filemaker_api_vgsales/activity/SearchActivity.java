@@ -10,13 +10,19 @@ import android.widget.Button;
 
 import com.joselopezrosario.vgsales.filemaker_api_vgsales.R;
 import com.joselopezrosario.vgsales.filemaker_api_vgsales.api.FMApi;
+import com.joselopezrosario.vgsales.filemaker_api_vgsales.util.PreferencesHelper;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 public class SearchActivity extends AppCompatActivity {
-
+    TextInputEditText vPlatform;
+    TextInputEditText vPublisher;
+    TextInputEditText vGenre;
+    TextInputEditText vName;
+    TextInputEditText vLimit;
+    TextInputEditText vOffset;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -28,6 +34,19 @@ public class SearchActivity extends AppCompatActivity {
             actionBar.setDisplayHomeAsUpEnabled(true);
             actionBar.setDisplayShowHomeEnabled(true);
         }
+        vPlatform = findViewById(R.id.platform);
+        vPublisher = findViewById(R.id.publisher);
+        vGenre = findViewById(R.id.genre);
+        vName = findViewById(R.id.name);
+        vLimit = findViewById(R.id.limit);
+        vOffset = findViewById(R.id.offset);
+        PreferencesHelper prefs = new PreferencesHelper(getApplicationContext());
+        vPlatform.setText(prefs.loadString(FMApi.FIELD_PLATFORM,""));
+        vPublisher.setText(prefs.loadString(FMApi.FIELD_PUBLISHER,""));
+        vGenre.setText(prefs.loadString(FMApi.FIELD_GENRE,""));
+        vName.setText(prefs.loadString(FMApi.FIELD_NAME,""));
+        vLimit.setText(prefs.loadString("limit","1"));
+        vOffset.setText(prefs.loadString("offset","1"));
         final Button findButton = findViewById(R.id.find);
         findButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -38,15 +57,18 @@ public class SearchActivity extends AppCompatActivity {
     }
 
     public void find() {
+       saveQuery();
+       finish();
     }
 
-    private String createFindQuery() {
-        TextInputEditText vPlatform = findViewById(R.id.platform_input);
-        TextInputEditText vPublisher = findViewById(R.id.publisher_input);
-        TextInputEditText vGenre = findViewById(R.id.genre_input);
-        TextInputEditText vName = findViewById(R.id.name_input);
-        TextInputEditText vLimit = findViewById(R.id.limit_input);
-        TextInputEditText vOffset = findViewById(R.id.offset_input);
+    private void saveQuery() {
+        JSONObject json;
+        vPlatform = findViewById(R.id.platform);
+        vPublisher = findViewById(R.id.publisher);
+        vGenre = findViewById(R.id.genre);
+        vName = findViewById(R.id.name);
+        vLimit = findViewById(R.id.limit);
+        vOffset = findViewById(R.id.offset);
         String platform = "";
         String publisher = "";
         String genre = "";
@@ -72,7 +94,7 @@ public class SearchActivity extends AppCompatActivity {
             offset = vOffset.getText().toString();
         }
         try {
-            JSONObject json = new JSONObject();
+            json = new JSONObject();
             JSONArray queryArray = new JSONArray();
             JSONObject pairs = new JSONObject()
                     .put(FMApi.FIELD_PLATFORM, "=" + platform)
@@ -83,9 +105,16 @@ public class SearchActivity extends AppCompatActivity {
             json.put("query", queryArray);
             json.put("limit", limit);
             json.put("offset", offset);
-            return json.toString();
+            PreferencesHelper prefs = new PreferencesHelper(getApplicationContext());
+            prefs.save(FMApi.FIELD_PLATFORM, platform);
+            prefs.save(FMApi.FIELD_PUBLISHER, publisher);
+            prefs.save(FMApi.FIELD_GENRE, genre);
+            prefs.save(FMApi.FIELD_NAME, name);
+            prefs.save("query", json.toString());
+            prefs.save("limit", limit);
+            prefs.save("offset", offset);
         } catch (JSONException e) {
-            return null;
+            System.out.println(e.toString());
         }
     }
 }
