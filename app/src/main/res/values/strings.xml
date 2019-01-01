@@ -1,4 +1,14 @@
-<resources>
+<resources tools:ignore="ExtraTranslation" xmlns:tools="http://schemas.android.com/tools">
     <string name="app_name">Video Game Sales</string>
     <string name="action_settings">Settings</string>
+    <string name="title_activity_search">Search Video Game Sales</string>
+    <string name="label_find_criteria">Find Criteria</string>
+    <string name="vg_platform">Platform</string>
+    <string name="vg_publisher">Publisher</string>
+    <string name="vg_genre">Genre</string>
+    <string name="vg_name">Video Game Name</string>
+    <string name="label_find_options">Other Options</string>
+    <string name="option_limit">Limit</string>
+    <string name="option_offset">Offset</string>
+    <string name="find">Find</string>
 </resources>

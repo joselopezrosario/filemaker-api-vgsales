@@ -30,7 +30,7 @@ public class VideoGamesListAdapter extends RecyclerView.Adapter<VideoGamesListAd
         TextView TextViewYear;
         TextView TextViewGenre;
         TextView TextViewPublisher;
-        //TextView TextViewGlobalSales;
+        TextView TextViewGlobalSales;
 
         ViewHolder(View view) {
             super(view);
@@ -40,7 +40,7 @@ public class VideoGamesListAdapter extends RecyclerView.Adapter<VideoGamesListAd
             TextViewYear = view.findViewById(R.id.vg_year);
             TextViewGenre = view.findViewById(R.id.vg_genre);
             TextViewPublisher = view.findViewById(R.id.vg_publisher);
-            //TextViewGlobalSales = view.findViewById(R.id.vg_global_sales);
+            TextViewGlobalSales = view.findViewById(R.id.vg_global_sales);
         }
     }
 
@@ -61,7 +61,8 @@ public class VideoGamesListAdapter extends RecyclerView.Adapter<VideoGamesListAd
             holder.TextViewYear.setText(record.getString(FMApi.FIELD_YEAR));
             holder.TextViewGenre.setText(record.getString(FMApi.FIELD_GENRE));
             holder.TextViewPublisher.setText(record.getString(FMApi.FIELD_PUBLISHER));
-            //holder.TextViewGlobalSales.setText(record.getString(FMApi.FIELD_GLOBAL_SALES));
+            String globalSales = "(" + record.getString(FMApi.FIELD_GLOBAL_SALES) + " mil units)";
+            holder.TextViewGlobalSales.setText(globalSales);
         }catch(JSONException e){
             System.out.println("Parsing error: " + e);
         }

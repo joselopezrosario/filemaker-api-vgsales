@@ -8,10 +8,10 @@ import com.joselopezrosario.vgsales.filemaker_api_vgsales.api.FMApi;
 
 import org.json.JSONArray;
 
-public class IntentServiceAPI extends IntentService {
-    public static final String SERVICE_NAME = "IntentServiceAPI";
+public class MainActivityIntentService extends IntentService {
+    public static final String SERVICE_NAME = "MainActivityIntentService";
 
-    public IntentServiceAPI() {
+    public MainActivityIntentService() {
         super(SERVICE_NAME);
     }
 

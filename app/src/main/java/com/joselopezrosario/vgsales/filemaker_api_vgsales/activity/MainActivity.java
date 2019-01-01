@@ -14,7 +14,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.Toast;
 
-import com.joselopezrosario.vgsales.filemaker_api_vgsales.service.IntentServiceAPI;
+import com.joselopezrosario.vgsales.filemaker_api_vgsales.service.MainActivityIntentService;
 import com.joselopezrosario.vgsales.filemaker_api_vgsales.R;
 import com.joselopezrosario.vgsales.filemaker_api_vgsales.util.Utilities;
 import com.joselopezrosario.vgsales.filemaker_api_vgsales.adapter.VideoGamesListAdapter;
@@ -39,9 +39,9 @@ public class MainActivity extends AppCompatActivity {
         mLayoutManager = new LinearLayoutManager(this);
         mRecyclerView.setLayoutManager(mLayoutManager);
 
-        Intent serviceIntent = new Intent(this, IntentServiceAPI.class);
+        Intent serviceIntent = new Intent(this, MainActivityIntentService.class);
         LocalBroadcastManager.getInstance(this).registerReceiver(
-                new DownloadStateReceiver(), new IntentFilter(IntentServiceAPI.SERVICE_NAME));
+                new DownloadStateReceiver(), new IntentFilter(MainActivityIntentService.SERVICE_NAME));
         this.startService(serviceIntent);
     }
 
@@ -55,6 +55,8 @@ public class MainActivity extends AppCompatActivity {
     public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();
         if (id == R.id.action_settings) {
+            Intent intent = new Intent(this, SearchActivity.class);
+            startActivity(intent);
             return true;
         }
         return super.onOptionsItemSelected(item);
@@ -64,7 +66,7 @@ public class MainActivity extends AppCompatActivity {
         @Override
         public void onReceive(Context context, Intent intent) {
             if (intent.getExtras() == null) {
-                Utilities.showToast(context, "LOL", Toast.LENGTH_SHORT);
+                Utilities.showToast(context, "Could not fetch data", Toast.LENGTH_SHORT);
                 return;
             }
             boolean statusLogin = intent.getExtras().getBoolean("statusLogin");
