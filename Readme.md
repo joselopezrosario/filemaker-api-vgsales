@@ -4,6 +4,10 @@ An Android app to learn how to interact with the FileMaker Server 17 Data API.
 
 ![MainActivity](https://raw.githubusercontent.com/joselopezrosario/filemaker-api-vgsales/master/project-screenshots/vgsales_MainActivity.PNG)
 
+![SearchActivity](https://raw.githubusercontent.com/joselopezrosario/filemaker-api-vgsales/master/project-screenshots/vgsales_SearchActivity.PNG)
+
+## Data Source
+
 I created the FileMaker database from a [Kaggle dataset on video game sales](https://www.kaggle.com/gregorut/videogamesales).
 
 ## Getting Started
@@ -24,7 +28,7 @@ These instructions will get you a copy of the project up and running on your loc
 2. Clone this repository in Android Studio
 3. Host the VideoGameSales database in FileMaker Server - you can use a local server
 4. Enable the FileMaker Data API
-5. Modify the host of the ENDPOINT variable in the [FMApi.java](https://github.com/joselopezrosario/filemaker-api-vgsales/blob/master/app/src/main/java/com/joselopezrosario/vgsales/filemaker_api_vgsales/api/FMApi.java) class to use your own server
+5. Modify the ENDPOINT, ACCOUNTNAME and PASSWORD variables in the [FMApi.java](https://github.com/joselopezrosario/filemaker-api-vgsales/blob/master/app/src/main/java/com/joselopezrosario/vgsales/filemaker_api_vgsales/api/FMApi.java) class to use your own infor
 
 ### Warning
 
@@ -33,3 +37,4 @@ This project uses a custom TrustManager that allows Java to communicate with unv
 ## Running the tests
 
 From the command line run `gradlew test`
+

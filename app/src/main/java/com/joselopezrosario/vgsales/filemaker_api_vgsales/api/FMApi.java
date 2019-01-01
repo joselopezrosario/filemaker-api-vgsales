@@ -22,9 +22,9 @@ import okhttp3.ResponseBody;
 @SuppressWarnings("SameParameterValue")
 public final class FMApi {
     private static String ENDPOINT = "https://192.168.0.7/fmi/data/v1/databases/VideoGameSales";
-
     public final static String ACCOUNTNAME = "Jose";
     public final static String PASSWORD = "ErS9WeQKa3BVJk5t";
+
     public final static String LAYOUT_VGSALES = "vgsales";
     public final static String FIELD_ID = "ID";
     public final static String FIELD_RANK = "Rank";

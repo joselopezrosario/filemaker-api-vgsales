@@ -14,13 +14,16 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.Toast;
 
-import com.joselopezrosario.vgsales.filemaker_api_vgsales.service.MainActivityIntentService;
 import com.joselopezrosario.vgsales.filemaker_api_vgsales.R;
-import com.joselopezrosario.vgsales.filemaker_api_vgsales.util.Utilities;
 import com.joselopezrosario.vgsales.filemaker_api_vgsales.adapter.VideoGamesListAdapter;
+import com.joselopezrosario.vgsales.filemaker_api_vgsales.api.FMApi;
+import com.joselopezrosario.vgsales.filemaker_api_vgsales.service.MainActivityIntentService;
+import com.joselopezrosario.vgsales.filemaker_api_vgsales.util.PreferencesHelper;
+import com.joselopezrosario.vgsales.filemaker_api_vgsales.util.Utilities;
 
 import org.json.JSONArray;
 import org.json.JSONException;
+import org.json.JSONObject;
 
 public class MainActivity extends AppCompatActivity {
     RecyclerView.Adapter mAdapter;
@@ -39,15 +42,19 @@ public class MainActivity extends AppCompatActivity {
         mLayoutManager = new LinearLayoutManager(this);
         mRecyclerView.setLayoutManager(mLayoutManager);
 
-        Intent serviceIntent = new Intent(this, MainActivityIntentService.class);
-        LocalBroadcastManager.getInstance(this).registerReceiver(
-                new DownloadStateReceiver(), new IntentFilter(MainActivityIntentService.SERVICE_NAME));
-        this.startService(serviceIntent);
+        PreferencesHelper prefs = new PreferencesHelper(getApplicationContext());
+        if ( prefs.loadString("query",null) == null){
+            initPrefs();
+        }
     }
 
     @Override
     protected void onResume() {
         super.onResume();
+        Intent serviceIntent = new Intent(this, MainActivityIntentService.class);
+        LocalBroadcastManager.getInstance(this).registerReceiver(
+                new DownloadStateReceiver(), new IntentFilter(MainActivityIntentService.SERVICE_NAME));
+        this.startService(serviceIntent);
     }
 
     @Override
@@ -91,6 +98,36 @@ public class MainActivity extends AppCompatActivity {
             } catch (JSONException e) {
                 System.out.println("Parsing error");
             }
+        }
+    }
+
+    /**
+     * initPrefs
+     */
+    private void initPrefs() {
+        try {
+            JSONObject json = new JSONObject();
+            JSONArray queryArray = new JSONArray();
+            JSONObject pairs = new JSONObject()
+                    .put(FMApi.FIELD_PLATFORM, "=NES")
+                    .put(FMApi.FIELD_PUBLISHER, "=Nintendo")
+                    .put(FMApi.FIELD_GENRE, "=*")
+                    .put(FMApi.FIELD_NAME, "=*");
+            queryArray.put(pairs);
+            json.put("query", queryArray);
+            json.put("limit", "25");
+            json.put("offset", "1");
+            PreferencesHelper prefs = new PreferencesHelper(getApplicationContext());
+            prefs.save(FMApi.FIELD_PLATFORM, "NES");
+            prefs.save(FMApi.FIELD_PUBLISHER, "Nintendo");
+            prefs.save(FMApi.FIELD_GENRE, "");
+            prefs.save(FMApi.FIELD_NAME, "");
+            prefs.save("query", json.toString());
+            prefs.save("limit", "25");
+            prefs.save("offset", "1");
+        } catch (JSONException e) {
+            System.out.println(e.toString());
+
         }
     }
 }
