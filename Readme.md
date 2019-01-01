@@ -2,9 +2,10 @@
 
 An Android app to learn how to interact with the FileMaker Server 17 Data API.
 
-![MainActivity](https://raw.githubusercontent.com/joselopezrosario/filemaker-api-vgsales/master/project-screenshots/vgsales_MainActivity.PNG)
+### Screenshots
 
-![SearchActivity](https://raw.githubusercontent.com/joselopezrosario/filemaker-api-vgsales/master/project-screenshots/vgsales_SearchActivity.png)
+[MainActvity](https://raw.githubusercontent.com/joselopezrosario/filemaker-api-vgsales/master/project-screenshots/MainActivity.png)
+[SearchActvitiy](https://raw.githubusercontent.com/joselopezrosario/filemaker-api-vgsales/master/project-screenshots/MainActivity.png)
 
 ## Data Source
 
