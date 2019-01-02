@@ -9,7 +9,7 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import com.joselopezrosario.vgsales.filemaker_api_vgsales.R;
-import com.joselopezrosario.vgsales.filemaker_api_vgsales.api.FMApi;
+import com.joselopezrosario.vgsales.filemaker_api_vgsales.data.VideoGameSale;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -57,13 +57,13 @@ public class VideoGamesListAdapter extends RecyclerView.Adapter<VideoGamesListAd
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         try{
             JSONObject record = mDataset.getJSONObject(position).getJSONObject("fieldData");
-            holder.TextViewRank.setText(record.getString(FMApi.FIELD_RANK));
-            holder.TextViewName.setText(record.getString(FMApi.FIELD_NAME));
-            holder.TextViewPlatform.setText(record.getString(FMApi.FIELD_PLATFORM));
-            holder.TextViewYear.setText(record.getString(FMApi.FIELD_YEAR));
-            holder.TextViewGenre.setText(record.getString(FMApi.FIELD_GENRE));
-            holder.TextViewPublisher.setText(record.getString(FMApi.FIELD_PUBLISHER));
-            String globalSales = "(" + record.getString(FMApi.FIELD_GLOBAL_SALES) + " mil units)";
+            holder.TextViewRank.setText(record.getString(VideoGameSale.FIELD_RANK));
+            holder.TextViewName.setText(record.getString(VideoGameSale.FIELD_NAME));
+            holder.TextViewPlatform.setText(record.getString(VideoGameSale.FIELD_PLATFORM));
+            holder.TextViewYear.setText(record.getString(VideoGameSale.FIELD_YEAR));
+            holder.TextViewGenre.setText(record.getString(VideoGameSale.FIELD_GENRE));
+            holder.TextViewPublisher.setText(record.getString(VideoGameSale.FIELD_PUBLISHER));
+            String globalSales = "(" + record.getString(VideoGameSale.FIELD_GLOBAL_SALES) + " mil units)";
             holder.TextViewGlobalSales.setText(globalSales);
         }catch(JSONException e){
             System.out.println("Parsing error: " + e);

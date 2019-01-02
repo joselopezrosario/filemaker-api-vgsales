@@ -6,6 +6,7 @@ import android.support.v4.content.LocalBroadcastManager;
 
 import com.joselopezrosario.vgsales.filemaker_api_vgsales.api.FMApi;
 import com.joselopezrosario.vgsales.filemaker_api_vgsales.api.FMApiResponse;
+import com.joselopezrosario.vgsales.filemaker_api_vgsales.data.VideoGameSale;
 import com.joselopezrosario.vgsales.filemaker_api_vgsales.util.PreferencesHelper;
 
 import org.json.JSONArray;
@@ -34,11 +35,11 @@ public class MainActivityIntentService extends IntentService {
         String query = prefs.loadString("query",null);
         JSONArray data;
         if ( query == null ){
-            fmar = FMApi.getRecords(token, FMApi.LAYOUT_VGSALES, "_limit=25");
+            fmar = FMApi.getRecords(token, VideoGameSale.LAYOUT_VGSALES, "_limit=25");
             data = fmar.getFmData();
         }else{
             RequestBody body = RequestBody.create(MediaType.parse(""), query);
-            fmar = FMApi.findRecords(token, FMApi.LAYOUT_VGSALES, body);
+            fmar = FMApi.findRecords(token, VideoGameSale.LAYOUT_VGSALES, body);
             data = fmar.getFmData();
         }
         if ( data == null ){

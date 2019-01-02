@@ -11,6 +11,7 @@ import android.widget.Toast;
 
 import com.joselopezrosario.vgsales.filemaker_api_vgsales.R;
 import com.joselopezrosario.vgsales.filemaker_api_vgsales.api.FMApi;
+import com.joselopezrosario.vgsales.filemaker_api_vgsales.data.VideoGameSale;
 import com.joselopezrosario.vgsales.filemaker_api_vgsales.util.PreferencesHelper;
 import com.joselopezrosario.vgsales.filemaker_api_vgsales.util.Utilities;
 
@@ -43,10 +44,10 @@ public class SearchActivity extends AppCompatActivity {
         vLimit = findViewById(R.id.limit);
         vOffset = findViewById(R.id.offset);
         PreferencesHelper prefs = new PreferencesHelper(getApplicationContext());
-        vPlatform.setText(prefs.loadString(FMApi.FIELD_PLATFORM,""));
-        vPublisher.setText(prefs.loadString(FMApi.FIELD_PUBLISHER,""));
-        vGenre.setText(prefs.loadString(FMApi.FIELD_GENRE,""));
-        vName.setText(prefs.loadString(FMApi.FIELD_NAME,""));
+        vPlatform.setText(prefs.loadString(VideoGameSale.FIELD_PLATFORM,""));
+        vPublisher.setText(prefs.loadString(VideoGameSale.FIELD_PUBLISHER,""));
+        vGenre.setText(prefs.loadString(VideoGameSale.FIELD_GENRE,""));
+        vName.setText(prefs.loadString(VideoGameSale.FIELD_NAME,""));
         vLimit.setText(prefs.loadString(FMApi.LIMIT,"1"));
         vOffset.setText(prefs.loadString(FMApi.OFFSET,"1"));
         final Button findButton = findViewById(R.id.find);
@@ -114,19 +115,19 @@ public class SearchActivity extends AppCompatActivity {
             json = new JSONObject();
             JSONArray queryArray = new JSONArray();
             JSONObject pairs = new JSONObject()
-                    .put(FMApi.FIELD_PLATFORM, "=" + fmqString(platform))
-                    .put(FMApi.FIELD_PUBLISHER, "=" + fmqString(publisher))
-                    .put(FMApi.FIELD_GENRE, "=" + fmqString(genre))
-                    .put(FMApi.FIELD_NAME, "=" + fmqString(name));
+                    .put(VideoGameSale.FIELD_PLATFORM, "=" + fmqString(platform))
+                    .put(VideoGameSale.FIELD_PUBLISHER, "=" + fmqString(publisher))
+                    .put(VideoGameSale.FIELD_GENRE, "=" + fmqString(genre))
+                    .put(VideoGameSale.FIELD_NAME, "=" + fmqString(name));
             queryArray.put(pairs);
             json.put(FMApi.QUERY, queryArray);
             json.put(FMApi.LIMIT, limit);
             json.put(FMApi.OFFSET, offset);
             PreferencesHelper prefs = new PreferencesHelper(getApplicationContext());
-            prefs.save(FMApi.FIELD_PLATFORM, platform);
-            prefs.save(FMApi.FIELD_PUBLISHER, publisher);
-            prefs.save(FMApi.FIELD_GENRE, genre);
-            prefs.save(FMApi.FIELD_NAME, name);
+            prefs.save(VideoGameSale.FIELD_PLATFORM, platform);
+            prefs.save(VideoGameSale.FIELD_PUBLISHER, publisher);
+            prefs.save(VideoGameSale.FIELD_GENRE, genre);
+            prefs.save(VideoGameSale.FIELD_NAME, name);
             prefs.save(FMApi.QUERY, json.toString());
             prefs.save(FMApi.LIMIT, limit);
             prefs.save(FMApi.OFFSET, offset);

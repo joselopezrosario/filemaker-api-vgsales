@@ -2,6 +2,7 @@ package com.joselopezrosario.vgsales.filemaker_api_vgsales;
 
 import com.joselopezrosario.vgsales.filemaker_api_vgsales.api.FMApi;
 import com.joselopezrosario.vgsales.filemaker_api_vgsales.api.FMApiResponse;
+import com.joselopezrosario.vgsales.filemaker_api_vgsales.data.VideoGameSale;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -50,7 +51,7 @@ public class FileMakerAPIUnitTest extends Robolectric {
     public void validateGetRecords() {
         FMApiResponse fmar = FMApi.getRecords(
                 token,
-                FMApi.LAYOUT_VGSALES,
+                VideoGameSale.LAYOUT_VGSALES,
                 "_limit=10");
         JSONArray getRecords = fmar.getFmData();
         assert getRecords != null;
@@ -65,7 +66,7 @@ public class FileMakerAPIUnitTest extends Robolectric {
     public void validateRandomRecord() {
         FMApiResponse fmar = FMApi.getRecords(
                 token,
-                FMApi.LAYOUT_VGSALES,
+                VideoGameSale.LAYOUT_VGSALES,
                 "_limit=1000");
         JSONArray getRecords = fmar.getFmData();
         JSONObject record;
@@ -73,18 +74,18 @@ public class FileMakerAPIUnitTest extends Robolectric {
             int max = getRecords.length();
             int randomNum = ThreadLocalRandom.current().nextInt(0, max);
             record = getRecords.getJSONObject(randomNum).getJSONObject("fieldData");
-            int id = record.getInt(FMApi.FIELD_ID);
-            int rank = record.getInt(FMApi.FIELD_RANK);
-            String name = record.getString(FMApi.FIELD_NAME);
-            String platform = record.getString(FMApi.FIELD_PLATFORM);
-            String year = record.getString(FMApi.FIELD_YEAR);
-            String genre = record.getString(FMApi.FIELD_GENRE);
-            String publisher = record.getString(FMApi.FIELD_PUBLISHER);
-            Double na_sales = record.getDouble(FMApi.FIELD_NA_SALES);
-            Double eu_sales = record.getDouble(FMApi.FIELD_EU_SALES);
-            Double jp_sales = record.getDouble(FMApi.FIELD_JP_SALES);
-            Double other_sales = record.getDouble(FMApi.FIELD_OTHER_SALES);
-            Double global_sales = record.getDouble(FMApi.FIELD_GLOBAL_SALES);
+            int id = record.getInt(VideoGameSale.FIELD_ID);
+            int rank = record.getInt(VideoGameSale.FIELD_RANK);
+            String name = record.getString(VideoGameSale.FIELD_NAME);
+            String platform = record.getString(VideoGameSale.FIELD_PLATFORM);
+            String year = record.getString(VideoGameSale.FIELD_YEAR);
+            String genre = record.getString(VideoGameSale.FIELD_GENRE);
+            String publisher = record.getString(VideoGameSale.FIELD_PUBLISHER);
+            Double na_sales = record.getDouble(VideoGameSale.FIELD_NA_SALES);
+            Double eu_sales = record.getDouble(VideoGameSale.FIELD_EU_SALES);
+            Double jp_sales = record.getDouble(VideoGameSale.FIELD_JP_SALES);
+            Double other_sales = record.getDouble(VideoGameSale.FIELD_OTHER_SALES);
+            Double global_sales = record.getDouble(VideoGameSale.FIELD_GLOBAL_SALES);
             int score = 0;
             if (id > 0) {
                 score++;
@@ -145,14 +146,14 @@ public class FileMakerAPIUnitTest extends Robolectric {
         FMApiResponse fmar;
         fmar = FMApi.createRecord(
                 token,
-                FMApi.LAYOUT_VGSALES,
+                VideoGameSale.LAYOUT_VGSALES,
                 RequestBody.create(MediaType.parse(""), createEditQuery)
         );
         String newRecordId = fmar.getFmRecordId();
         boolean delete = false;
         fmar.clear();
         if (newRecordId != null) {
-            fmar = FMApi.deleteRecord(token, FMApi.LAYOUT_VGSALES, newRecordId);
+            fmar = FMApi.deleteRecord(token, VideoGameSale.LAYOUT_VGSALES, newRecordId);
             delete = fmar.isSuccess();
         }
         assert newRecordId != null && delete;
@@ -174,14 +175,14 @@ public class FileMakerAPIUnitTest extends Robolectric {
         RequestBody createRequestBody = RequestBody.create(MediaType.parse(""), emptyFieldData);
         fmar = FMApi.createRecord(
                 token,
-                FMApi.LAYOUT_VGSALES,
+                VideoGameSale.LAYOUT_VGSALES,
                 createRequestBody);
         String newRecordId = fmar.getFmRecordId();
         RequestBody editRequestBody = RequestBody.create(MediaType.parse(""), createEditQuery);
         fmar.clear();
         fmar = FMApi.editRecord(
                 token,
-                FMApi.LAYOUT_VGSALES,
+                VideoGameSale.LAYOUT_VGSALES,
                 newRecordId,
                 editRequestBody);
         boolean edit = fmar.isSuccess();
@@ -189,10 +190,10 @@ public class FileMakerAPIUnitTest extends Robolectric {
         fmar.clear();
         fmar = FMApi.deleteRecord(
                 token,
-                FMApi.LAYOUT_VGSALES,
+                VideoGameSale.LAYOUT_VGSALES,
                 newRecordId);
         delete = fmar.isSuccess();
-        assert newRecordId != null && edit && delete;
+         assert newRecordId != null && edit && delete;
     }
 
     /**
@@ -208,7 +209,7 @@ public class FileMakerAPIUnitTest extends Robolectric {
         }
         FMApiResponse fmar;
         RequestBody query = RequestBody.create(MediaType.parse(""), jsonQuery);
-        fmar = FMApi.findRecords(token, FMApi.LAYOUT_VGSALES, query);
+        fmar = FMApi.findRecords(token, VideoGameSale.LAYOUT_VGSALES, query);
         if (fmar.getHttpResponseCode() != 200 || fmar.getFmData() == null) {
             assert false;
             return;
@@ -237,8 +238,8 @@ public class FileMakerAPIUnitTest extends Robolectric {
             JSONObject json = new JSONObject();
             JSONArray queryArray = new JSONArray();
             JSONObject pairs = new JSONObject().
-                    put(FMApi.FIELD_PUBLISHER, "=Nintendo").
-                    put(FMApi.FIELD_PLATFORM, "=NES");
+                    put(VideoGameSale.FIELD_PUBLISHER, "=Nintendo").
+                    put(VideoGameSale.FIELD_PLATFORM, "=NES");
             queryArray.put(pairs);
             json.put("query", queryArray);
             json.put("limit", "10");
@@ -253,17 +254,17 @@ public class FileMakerAPIUnitTest extends Robolectric {
         try {
             JSONObject json = new JSONObject();
             JSONObject pairs = new JSONObject().
-                    put(FMApi.FIELD_RANK, "0").
-                    put(FMApi.FIELD_NAME, "Jose's Game").
-                    put(FMApi.FIELD_PLATFORM, "Best Platform").
-                    put(FMApi.FIELD_YEAR, "2018").
-                    put(FMApi.FIELD_GENRE, "Arcade").
-                    put(FMApi.FIELD_PUBLISHER, "Best Publisher").
-                    put(FMApi.FIELD_NA_SALES, "10.0").
-                    put(FMApi.FIELD_EU_SALES, "11.0").
-                    put(FMApi.FIELD_JP_SALES, "12.0").
-                    put(FMApi.FIELD_OTHER_SALES, "13.0").
-                    put(FMApi.FIELD_GLOBAL_SALES, "46.0");
+                    put(VideoGameSale.FIELD_RANK, "0").
+                    put(VideoGameSale.FIELD_NAME, "Jose's Game").
+                    put(VideoGameSale.FIELD_PLATFORM, "Best Platform").
+                    put(VideoGameSale.FIELD_YEAR, "2018").
+                    put(VideoGameSale.FIELD_GENRE, "Arcade").
+                    put(VideoGameSale.FIELD_PUBLISHER, "Best Publisher").
+                    put(VideoGameSale.FIELD_NA_SALES, "10.0").
+                    put(VideoGameSale.FIELD_EU_SALES, "11.0").
+                    put(VideoGameSale.FIELD_JP_SALES, "12.0").
+                    put(VideoGameSale.FIELD_OTHER_SALES, "13.0").
+                    put(VideoGameSale.FIELD_GLOBAL_SALES, "46.0");
             json.put("fieldData", pairs.toString());
             return json.toString();
         } catch (JSONException e) {

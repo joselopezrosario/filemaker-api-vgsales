@@ -17,6 +17,7 @@ import android.widget.Toast;
 import com.joselopezrosario.vgsales.filemaker_api_vgsales.R;
 import com.joselopezrosario.vgsales.filemaker_api_vgsales.adapter.VideoGamesListAdapter;
 import com.joselopezrosario.vgsales.filemaker_api_vgsales.api.FMApi;
+import com.joselopezrosario.vgsales.filemaker_api_vgsales.data.VideoGameSale;
 import com.joselopezrosario.vgsales.filemaker_api_vgsales.service.MainActivityIntentService;
 import com.joselopezrosario.vgsales.filemaker_api_vgsales.util.PreferencesHelper;
 import com.joselopezrosario.vgsales.filemaker_api_vgsales.util.Utilities;
@@ -42,7 +43,7 @@ public class MainActivity extends AppCompatActivity {
         mRecyclerView.setLayoutManager(mLayoutManager);
 
         PreferencesHelper prefs = new PreferencesHelper(getApplicationContext());
-        if ( prefs.loadString("query",null) == null){
+        if ( prefs.loadString(FMApi.QUERY,null) == null){
             initPrefs();
         }
     }
@@ -85,7 +86,7 @@ public class MainActivity extends AppCompatActivity {
                 Utilities.showToast(context, "Login error", Toast.LENGTH_SHORT);
                 return;
             }
-            String data = intent.getExtras().getString("data");
+            String data = intent.getExtras().getString(FMApi.DATA);
             if (data == null) {
                 Utilities.showToast(context, "No records found", Toast.LENGTH_SHORT);
                 return;
@@ -108,19 +109,19 @@ public class MainActivity extends AppCompatActivity {
             JSONObject json = new JSONObject();
             JSONArray queryArray = new JSONArray();
             JSONObject pairs = new JSONObject()
-                    .put(FMApi.FIELD_PLATFORM, "=NES")
-                    .put(FMApi.FIELD_PUBLISHER, "=Nintendo")
-                    .put(FMApi.FIELD_GENRE, "=*")
-                    .put(FMApi.FIELD_NAME, "=*");
+                    .put(VideoGameSale.FIELD_PLATFORM, "=NES")
+                    .put(VideoGameSale.FIELD_PUBLISHER, "=Nintendo")
+                    .put(VideoGameSale.FIELD_GENRE, "=*")
+                    .put(VideoGameSale.FIELD_NAME, "=*");
             queryArray.put(pairs);
             json.put(FMApi.QUERY, queryArray);
             json.put(FMApi.LIMIT, "25");
             json.put(FMApi.OFFSET, "1");
             PreferencesHelper prefs = new PreferencesHelper(getApplicationContext());
-            prefs.save(FMApi.FIELD_PLATFORM, "NES");
-            prefs.save(FMApi.FIELD_PUBLISHER, "Nintendo");
-            prefs.save(FMApi.FIELD_GENRE, "");
-            prefs.save(FMApi.FIELD_NAME, "");
+            prefs.save(VideoGameSale.FIELD_PLATFORM, "NES");
+            prefs.save(VideoGameSale.FIELD_PUBLISHER, "Nintendo");
+            prefs.save(VideoGameSale.FIELD_GENRE, "");
+            prefs.save(VideoGameSale.FIELD_NAME, "");
             prefs.save(FMApi.QUERY, json.toString());
             prefs.save(FMApi.LIMIT, "25");
             prefs.save(FMApi.OFFSET, "1");
